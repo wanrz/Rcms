@@ -1,0 +1,21 @@
+delete from AUTH_MENU;
+INSERT INTO AUTH_MENU (MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) VALUES (100, '基础信息管理', 'ToolBarBaseInfo', '0', '0', 1, '#');
+INSERT INTO AUTH_MENU (MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) VALUES (101, '部门管理', 'DeptManage', 'ToolBarBaseInfo', '1', 1, '/admin/department/deptManage.do');
+INSERT INTO AUTH_MENU (MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) VALUES (102, '角色管理', 'RoleManage', 'ToolBarBaseInfo', '1', 2, '/admin/role/roleManage.do');
+INSERT INTO AUTH_MENU (MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) VALUES (103, '人员管理', 'UserManage', 'ToolBarBaseInfo', '1', 3, '/admin/user/userManage.do');
+INSERT INTO AUTH_MENU (MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) VALUES (104, '立项管理', 'ToolBarCProjManage', '0', '0', 2, '#');
+INSERT INTO AUTH_MENU (MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) VALUES (105, '立项登记', 'CreateProj', 'ToolBarCProjManage', '1', 1, '/admin/project/project.do');
+INSERT INTO AUTH_MENU (MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) VALUES (106, '项目变更', 'ChangeProj', 'ToolBarCProjManage', '1', 2, '/admin/change/project.do');
+insert into AUTH_MENU (MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) values(118,'项目查询','QueryProj','ToolBarCProjManage',1,3,'/admin/projectQuery/project.do');
+INSERT INTO AUTH_MENU (MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) VALUES (107, '项目管理', 'ToolBarProjManage', '0', '0', 3, '#');
+insert into AUTH_MENU (MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) values(115,'周报填写','RptWeeklyFillManage','ToolBarProjManage',1,6,'/admin/weeklyReport/weeklyReportFill.do');
+insert into AUTH_MENU (MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) values(116,'周报审批','RptWeeklyApprManage','ToolBarProjManage',1,7,'/admin/weeklyReport/weeklyReportApprove.do');
+
+INSERT INTO AUTH_MENU (MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) VALUES (108, '资源分配', 'ResourceManage', 'ToolBarProjManage', '1', 1, '/admin/project/projectRecource.do');
+INSERT INTO AUTH_MENU (MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) VALUES (109, '任务分配', 'TaskManage', 'ToolBarProjManage', '1', 2, '/admin/task/taskManage.do');
+INSERT INTO AUTH_MENU (MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) VALUES (110, '进度监控', 'ProgressManage', 'ToolBarProjManage', '1', 3, '/admin/project/projMonitor.do');
+INSERT INTO AUTH_MENU (MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) VALUES (111, '日志填写', 'FIllLogManage', 'ToolBarProjManage', '1', 4, '/admin/workLog/workManage.do');
+INSERT INTO AUTH_MENU (MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) VALUES (112, '工作量统计', 'WorkLoadManage', 'ToolBarProjManage', '1', 5, '/admin/workLoad/workLoadAccount.do');
+INSERT INTO AUTH_MENU (MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) VALUES (113, '系统管理', 'ToolBarSysManage', '0', '0', 4, '#');
+INSERT INTO AUTH_MENU (MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) VALUES (114, '字典管理', 'DictManage', 'ToolBarSysManage', '1', 1, '/admin/system/dictManage.do');
+insert into AUTH_MENU (MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) values(117,'日志查看','WorkLogViewManage','ToolBarProjManage',1,8,'/admin/workLog/workLogViewManage.do');

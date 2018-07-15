@@ -1,0 +1,2 @@
+delete from AUTH_MENU WHERE MENU_CODE IN ('WorkLogViewManage');
+insert into AUTH_MENU(MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) values(117,'日志查看','WorkLogViewManage','ToolBarProjManage',1,8,'/admin/workLog/workLogViewManage.do');

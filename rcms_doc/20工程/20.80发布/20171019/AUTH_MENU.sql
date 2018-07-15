@@ -1,0 +1,3 @@
+delete from AUTH_MENU WHERE MENU_CODE IN ('RptWeeklyFillManage','RptWeeklyApprManage');
+insert into AUTH_MENU(MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) values(115,'周报填写','RptWeeklyFillManage','ToolBarProjManage',1,6,'/admin/weeklyReport/weeklyReportFill.do');
+insert into AUTH_MENU(MENU_ID, MENU_NAME, MENU_CODE, PARENT_MENU_CODE, IS_LEAF, IDX, ACTION_URL) values(116,'周报审批','RptWeeklyApprManage','ToolBarProjManage',1,7,'/admin/weeklyReport/weeklyReportApprove.do');

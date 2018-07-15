@@ -1,0 +1,39 @@
+alter table PROJECT add BUS_ID bigint;
+alter table PROJECT_HIS add BUS_ID bigint;
+
+
+
+
+----------已投产
+1、
+INSERT INTO AUTH_ATTRIBUTE (ATTRIBUTE_ID, ATTRIBUTE_CODE, MENU_CODE, TITLE, OPERATION_URL, OPERATION_TYPE, IDX, CREATE_USER_ID, UPDATE_TIME, CREATE_TIME) VALUES (45, 'CreateProjDetail', 'CreateProj', '详情', '#', 2, 5, null, null, null);
+INSERT INTO AUTH_ATTR_ACTION (ATTRIBUTE_ID, ACTION_URL, CREATE_TIME, VERIFY_RESOURCE) VALUES (45, '/admin/project/projectDetails.do',  '2017-05-05 00:00:00', '1');
+2、添加项目周报表【PROJECT_RPT_WEEKLY】、周报审批意见表【RPT_WEEKLY_APPROVAL_OPINIONS】、部门负责人及以上人员项目关系视图【V_DEPT_USER_PROJECT】
+3、用户信息表【USER_INFO】添加字段 是否允许重复登录 ALLOW_REPEAT_LOGIN bit，并设置默认值1
+4、修改视图 用户项目关系【V_USER_PROJECT】、 用户人员视图【V_USER】、用户项目关系(包含下辖部门)【V_USER_PROJECT_ALL】、用户人员视图（包含下辖部门）【V_USER_ALL】
+
+
+
+----------已投产
+1、项目表【PROJECT】字段WORKLOAD变成DECIMAL(10, 2)
+   项目表【PROJECT_HIS】字段WORKLOAD变成DECIMAL(10, 2)
+   
+2、工作日志表【WORK_LOG】添加OVER_WORK_REASON VARCHAR(200)、IS_VERFIED CHAR(1)、PM_ID INTEGER
+alter table WORK_LOG add OVER_WORK_REASON VARCHAR(200);
+alter table WORK_LOG add IS_VERFIED CHAR(1);
+alter table WORK_LOG add PM_ID INTEGER;
+
+update WORK_LOG set IS_VERFIED = '0' where IS_VERFIED is null;
+
+
+update AUTH_ATTR_ACTION set VERIFY_RESOURCE = '0' where ACTION_URL = '/admin/user/dirTree.ajax';
+update AUTH_ATTR_ACTION set ACTION_URL = '/admin/project/dirTree.ajax',VERIFY_RESOURCE = '0' WHERE ACTION_URL = '/admin/department/dirTree.ajax' AND ATTRIBUTE_ID = 14;
+INSERT INTO AUTH_ATTR_ACTION (ATTRIBUTE_ID, ACTION_URL, CREATE_TIME, VERIFY_RESOURCE) VALUES (15, '/admin/project/dirTree.ajax', TIMESTAMP '1017-05-05 00:00:00', '0');
+INSERT INTO AUTH_ATTR_ACTION (ATTRIBUTE_ID, ACTION_URL, CREATE_TIME, VERIFY_RESOURCE) VALUES (16, '/admin/project/dirTree.ajax', TIMESTAMP '1017-05-05 00:00:00', '0');
+
+INSERT INTO AUTH_ATTR_ACTION (ATTRIBUTE_ID, ACTION_URL, CREATE_TIME, VERIFY_RESOURCE) VALUES (18, '/admin/change/dirTree.ajax', TIMESTAMP '1017-05-05 00:00:00', '0');
+INSERT INTO AUTH_ATTR_ACTION (ATTRIBUTE_ID, ACTION_URL, CREATE_TIME, VERIFY_RESOURCE) VALUES (19, '/admin/change/dirTree.ajax', TIMESTAMP '1017-05-05 00:00:00', '0');
+
+update AUTH_ATTR_ACTION set ACTION_URL = '/admin/project/monitor/dirTree.ajax',VERIFY_RESOURCE = '0' WHERE ACTION_URL = '/admin/department/dirTree.ajax' AND ATTRIBUTE_ID = 30;
+
+3、添加6个视图
