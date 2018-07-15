@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc classpath:xsd/spring-mvc-4.0.xsd
+        http://www.springframework.org/schema/beans classpath:xsd/spring-beans-4.0.xsd
+        http://www.springframework.org/schema/context classpath:xsd/spring-context-4.0.xsd
+        http://www.springframework.org/schema/util classpath:xsd/spring-util-4.0.xsd">
+
+	<!-- spring mvc自动扫描设置 -->
+	<context:annotation-config />
+	<context:component-scan base-package="com.rionsoft.rcms.web" />
+
+	<!-- 开启全局通知 -->
+	<mvc:annotation-driven />
+
+	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping" />
+	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter" p:messageConverters-ref="messageConverters" />
+	<util:list id="messageConverters">
+		<bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter" />
+	</util:list>
+
+	<!-- springmvc view设置 -->
+	<mvc:view-controller path="/" view-name="admin/login" />
+	
+	<bean id="contentNegotiationManager" class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
+		<property name="mediaTypes">
+			<value>
+				do=text/html
+				html=text/html
+				json=application/json
+				xml=application/xml
+				ajax=application/json
+				download=application/json
+			</value>
+		</property>
+		<property name="defaultContentType" value="application/json" />
+	</bean>
+	<bean
+		class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver"
+		p:order="0">
+		<!-- P:parameterName="content" -->
+		<property name="contentNegotiationManager" ref="contentNegotiationManager" />
+		<property name="viewResolvers">
+			<list>
+				<bean
+					class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+					p:order="100" p:viewClass="org.springframework.web.servlet.view.JstlView"
+					p:prefix="/WEB-INF/jsp/" p:suffix=".jsp" />
+				<bean class="org.springframework.web.servlet.view.BeanNameViewResolver"
+					p:order="10" />
+			</list>
+		</property>
+	</bean>
+
+	<!-- 文件上传设置 -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver"
+		p:defaultEncoding="UTF-8" p:maxUploadSize="5242880" />
+
+	<!-- 全局异常处置 -->
+	<bean id="exceptionResolver" class="com.rionsoft.rcms.web.common.error.RionsoftMappingExceptionResolver"/>
+
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**" />
+			<mvc:exclude-mapping path="/kindeditorFileUpload.do" />
+			<mvc:exclude-mapping path="/kindeditorFileManager.do"></mvc:exclude-mapping>
+			<bean class="com.rionsoft.rcms.web.common.interceptor.FileUploadInterceptor" />
+		</mvc:interceptor>
+	</mvc:interceptors>
+	
+	<mvc:resources location="/plugins/editor/" mapping="/plugins/editor/**"/>
+</beans>

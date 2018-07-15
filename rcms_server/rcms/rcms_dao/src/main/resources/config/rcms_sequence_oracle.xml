@@ -1,0 +1,34 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans classpath:xsd/spring-beans-4.0.xsd">
+	
+	<!-- 配置数据库回滚事务 -->
+<!-- 	<bean id="roepTxManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager"> -->
+<!-- 		<property name="dataSource" ref="roepDS" /> -->
+<!-- 	</bean> -->
+
+	<!-- 人员编码序列 -->
+	<bean id="userInfoCodeSeq" class="org.springframework.jdbc.support.incrementer.OracleSequenceMaxValueIncrementer">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="incrementerName" value="USER_INFO_CODE_SEQ"/>
+		<property name="paddingLength" value="3"/>
+	</bean>
+	<!-- 部门SEQ序列 -->
+	<bean id="authDirSeq" class="org.springframework.jdbc.support.incrementer.OracleSequenceMaxValueIncrementer">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="incrementerName" value="AUTH_DIR_SEQ"/>
+		<property name="paddingLength" value="5"/>
+	</bean>
+	<!-- 部门编码序列 -->
+	<bean id="authDirCodeSeq" class="org.springframework.jdbc.support.incrementer.OracleSequenceMaxValueIncrementer">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="incrementerName" value="AUTH_DIR_CODE_SEQ"/>
+		<property name="paddingLength" value="4"/>
+	</bean>	
+	<!-- 任务编码序列 -->
+	<bean id="taskCodeSeq" class="org.springframework.jdbc.support.incrementer.OracleSequenceMaxValueIncrementer">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="incrementerName" value="TASK_CODE_SEQ"/>
+		<property name="paddingLength" value="3"/>
+	</bean>	
+</beans>

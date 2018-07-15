@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper 
+  PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" 
+  "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.rionsoft.rcms.dao.task.ITaskMonitorMapper">
+	
+	<resultMap type="com.rionsoft.rcms.condition.task.TaskUserRefListEntry" id="monitor">
+		<result property="pkTask" 		  	  column="PK_TASK" />
+		<result property="taskCode"     	  column="TASK_CODE"/>
+		<result property="taskName"     	  column="TASK_NAME"/>
+		<result property="userId" 		  	  column="USER_ID" />
+		<result property="userName" 		  column="USER_NAME" />
+		<result property="percentage" 		  column="PERCENTAGE" />
+		<result property="expStartDate"   	  column="EXP_START_DATE"/>
+		<result property="expEndDate" 		  column="EXP_END_DATE"/>
+		<result property="relEndDate" 		  column="REL_END_DATE"/>
+		<result property="requireWorkload" 	  column="REQUIRE_WORKLOAD" />
+		<result property="projName" 		  column="PROJ_NAME" />
+		<result property="pmName" 		  column="PM_NAME" />
+	</resultMap>	
+	
+	<resultMap type="com.rionsoft.rcms.condition.project.ProjMonitorListEntry" id="projMonitor">
+		<result property="projCode" 		  	  column="PROJ_CODE" />
+		<result property="projName"     	  column="PROJ_NAME"/>
+		<result property="pmName" 		  column="PM_NAME" />
+		<result property="pkProj" 		  	  column="PK_PROJ" />
+		<result property="personCount" 		  	  column="PERSON_COUNT" />
+		<result property="expStartDate"   	  column="EXP_START_DATE"/>
+		<result property="expEndDate" 		  column="EXP_END_DATE"/>
+		<result property="status" 		 	  column="STATUS"/>
+		<result property="persent" 		 	  column="PERSENT"/>
+		<result property="deptName" 		 	  column="DEPT_NAME"/>
+	</resultMap>
+	
+	<resultMap type="com.rionsoft.rcms.condition.task.TaskListEntry" id="taskMonitor">
+		<result property="pkTask" 		  	  column="PK_TASK" />
+		<result property="pkProj"     	      column="PK_PROJ" />
+		<result property="taskCode" 		  	  column="TASK_CODE" />
+		<result property="taskName" 		  	  column="TASK_NAME" />
+		<result property="expStartDate" 		  	  column="EXP_START_DATE" />
+		<result property="expEndDate"   	  column="EXP_END_DATE"/>
+		<result property="relEndDate" 		  column="REL_END_DATE"/>
+		<result property="percentage" 		 	  column="PERCENTAGE"/>
+		<result property="workload" 		 	  column="WORKlOAD"/>
+		<result property="status" 		 	  column="STATUS"/>
+		<result property="userCount" 		 	  column="USER_COUNT"/>
+		<result property="taskType" 		 	  column="TASK_TYPE"/>
+	</resultMap>
+		
+	
+	<select id="queryProgressDetail" parameterType="com.rionsoft.rcms.condition.task.TaskMonitorCondition" resultMap="monitor" >
+				SELECT a.PK_TASK,
+                          a.PK_PROJ,
+                          a.TASK_CODE,
+                          a.TASK_NAME,
+                          a.EXP_START_DATE,
+                          a.EXP_END_DATE,
+                          a.REL_END_DATE,
+                          c.PERCENTAGE,
+                          c.REQUIRE_WORKLOAD,
+                          b.PROJ_NAME,
+                          c.USER_ID,
+                          (select USER_NAME from USER_INFO WHERE USER_ID=c.USER_ID) AS USER_NAME,
+                          (select USER_NAME from USER_INFO WHERE USER_ID=b.PM_ID) AS PM_NAME
+                        FROM TASK_USER_REF c
+                        LEFT JOIN TASK a on a.PK_TASK=c.PK_TASK
+                        JOIN PROJECT b on a.PK_PROJ = b.PK_PROJ
+                        <where>
+                        	<if test="pkTask!=null and pkTask!=''">
+                        		and a.PK_TASK=#{pkTask}
+                        	</if>
+                        	<if test="pkTaskList!=null and  pkTaskList.size>0">
+                        		and a.PK_TASK in 
+                        		<foreach collection="pkTaskList" item="pk" open="(" close=")" separator=",">
+                        			#{pk}
+                        		</foreach>
+                        	</if>
+                       
+						</where>
+	</select>	
+	
+	<select id="queryProjMonitor" resultMap="projMonitor" parameterType="com.rionsoft.rcms.condition.project.ProjMonitorCondition">
+		
+		SELECT 
+			a.PK_PROJ,
+			a.PROJ_NAME,
+			a.PROJ_CODE,
+			b.USER_NAME as PM_NAME,
+			a.EXP_START_DATE,
+			a.EXP_END_DATE,
+			a.STATUS,
+			d.DIR_NAME as DEPT_NAME,
+			(SELECT COUNT(2)  
+			   		FROM PROJECT_RECOURCE_REF k 
+			   		WHERE a.PK_PROJ=k.PK_PROJ) as PERSON_COUNT
+			
+		FROM PROJECT a
+		LEFT JOIN USER_INFO b ON b.USER_ID=a.PM_ID
+		LEFT JOIN AUTH_DIR d ON d.DIR_ID=a.DEPT_ID
+		
+		<where>
+			<if test="projName !=null and projName !=''">
+				and a.PROJ_NAME like '%'+#{projName}+'%'
+			</if>
+			<if test="status !=null and status !=''">
+				and a.STATUS like #{status}
+			</if>
+			<if test="projCode !=null and projCode !=''">
+				and a.PROJ_CODE like '%'+#{projCode}+'%'
+			</if>
+			<if test="deptId !=null and deptId !=''">
+				and a.DEPT_ID = #{deptId}
+			</if>
+			<if test="pmId !=null and pmId !=''">
+				and a.PM_ID = #{pmId}
+			</if>
+			<if test="planEndDate != null">
+				<![CDATA[
+					and a.EXP_END_DATE = #{planEndDate}
+				]]>
+			</if>
+			<if test="checkDirName !=null and checkDirName !=''">
+				and d.DIR_SEQ like '%'+#{checkDirName}+'%'
+			</if>
+		</where>
+			
+	</select>
+	<select id="queryMonitorByDataCode" resultMap="projMonitor" parameterType="com.rionsoft.rcms.condition.project.ProjMonitorCondition">
+		SELECT 
+			a.PK_PROJ,
+			a.PROJ_NAME,
+			a.PROJ_CODE,
+			b.USER_NAME as PM_NAME,
+			a.EXP_START_DATE,
+			a.EXP_END_DATE,
+			a.STATUS,
+			c.DIR_NAME as DEPT_NAME,
+			SUM(d.PERCENTAGE)/count(d.TASK_NAME) as PERSENT,
+			(SELECT COUNT(2)  
+			   		FROM PROJECT_RECOURCE_REF k 
+			   		WHERE a.PK_PROJ = k.PK_PROJ) as PERSON_COUNT
+		FROM PROJECT a
+		LEFT JOIN USER_INFO b ON b.USER_ID = a.PM_ID
+		LEFT JOIN AUTH_DIR c ON c.DIR_ID = a.DEPT_ID
+	    JOIN TASK d ON d.PK_PROJ = a.PK_PROJ
+	    <if test="adminLoginCode != loginCode and (dirSeq ==null or dirSeq =='')">
+			join V_USER_PROJECT e on a.PK_PROJ = e.PK_PROJ
+		</if>
+		<if test="adminLoginCode != loginCode and dirSeq !=null and dirSeq !=''">
+			join V_USER_PROJECT_ALL e on a.PK_PROJ = e.PK_PROJ
+		</if>
+		<where>
+			<if test="projName !=null and projName !=''">
+				and a.PROJ_NAME like '%'+#{projName}+'%'
+			</if>
+			<if test="status !=null and status !=''">
+				and a.STATUS=#{status}
+			</if>
+			<if test="projCode !=null and projCode !=''">
+				and a.PROJ_CODE like '%'+#{projCode}+'%'
+			</if>
+			<if test="deptName !=null and deptName !=''">
+				and c.DIR_NAME like '%'+#{deptName}+'%'
+			</if>
+			<if test="deptId !=null and deptId !=''">
+				and a.DEPT_ID = #{deptId}
+			</if>
+			<if test="pmId !=null and pmId !=''">
+				and a.PM_ID = #{pmId}
+			</if>
+			<if test="planEndDate != null">
+				<![CDATA[
+					and a.EXP_END_DATE = #{planEndDate}
+				]]>
+			</if>
+			<if test="dirSeq !=null and dirSeq !=''">
+        		and c.DIR_SEQ LIKE '%'+#{dirSeq}+'%'
+			</if>
+			  <if test="adminLoginCode  != loginCode">
+				and e.USER_ID = #{userId}
+			</if>
+		</where>
+		GROUP BY a.PK_PROJ,a.PROJ_NAME,a.PROJ_CODE,b.USER_NAME,a.EXP_START_DATE,a.EXP_END_DATE,a.STATUS,c.DIR_NAME
+	</select>
+	
+	<select id="queryTask"  resultType="java.lang.Integer">
+		SELECT 
+			 count(1)
+		FROM TASK
+		where
+			PK_PROJ = #{pkProj} 
+	</select>
+	
+	<select id="projPercent"  resultType="java.lang.Integer">
+		SELECT 
+			sum(PERCENTAGE)/count(TASK_NAME)
+		FROM TASK
+		where
+			PK_PROJ = #{pkProj} 
+	</select>
+	
+	<select id="queryTaskMonitor" resultMap="taskMonitor" parameterType="com.rionsoft.rcms.condition.task.TaskCondition">
+		SELECT 
+			a.PK_TASK,
+			a.TASK_NAME,
+			a.TASK_CODE,
+			a.EXP_START_DATE,
+			a.EXP_END_DATE,
+			a.REL_END_DATE,
+			a.WORKLOAD,
+			a.STATUS,
+			a.PERCENTAGE,
+			(SELECT COUNT(b.USER_ID)  
+			   		FROM TASK_USER_REF b 
+			   		WHERE a.PK_TASK=b.PK_TASK) as USER_COUNT
+		FROM TASK a
+		
+		<where>
+			<if test="pkProj !=null and pkProj !=''">
+				and a.PK_PROJ =#{pkProj}
+			</if>
+			<if test="taskName !=null and taskName !=''">
+				and a.TASK_NAME like '%'+#{taskName}+'%'
+			</if>
+			<if test="taskCode !=null and taskCode !=''">
+				and a.TASK_CODE like '%'+#{taskCode}+'%'
+			</if>
+			<if test="status !=null and status !=''">
+				and a.STATUS = #{status}
+			</if>
+			<if test="relEndDate != null">
+				<![CDATA[
+					and a.REL_END_DATE = #{relEndDate}
+				]]>
+			</if>
+			
+		</where>
+	</select>
+</mapper>
+

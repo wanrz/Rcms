@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper 
+  PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" 
+  "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.rionsoft.rcms.dao.system.dict.prolevel.IProjectLevelDictMapper">
+  	<resultMap type="com.rionsoft.rcms.entry.system.ProjectLevelDictEntry" id="proLevelDict">
+  		<result property="levelId" column="LEVEL_ID"/>
+  		<result property="levelName" column="LEVEL_NAME"/>
+  		<result property="version" column="VERSION"/>
+  		<result property="createUserId" column="CREATE_USER_ID"/>
+  		<result property="flag" column="FLAG"/>
+  		<result property="createTime" column="CREATE_TIME"/>
+  		<result property="updateTime" column="UPDATE_TIME"/>
+  		
+  	</resultMap>		
+	
+	
+	<!-- 按紧急程度查询字典 -->
+	<select id="ProLevelDictByConditioinList"  resultMap="proLevelDict" parameterType="com.rionsoft.rcms.condition.system.ProjectLevelDictCondition" >
+	
+	Select LEVEL_ID,LEVEL_NAME,FLAG,VERSION,CREATE_USER_ID,CREATE_TIME,UPDATE_TIME
+	
+	from project_LEVEL_DICT
+	WHERE 1=1
+	
+		<if test="levelId !=null and levelId !=''">
+		and	LEVEL_ID=#{levelId}
+		</if>
+	
+
+	</select>
+	
+	<select id="queryLevel"  resultMap="proLevelDict">
+	
+	Select LEVEL_ID,LEVEL_NAME
+	
+	from PROJECT_LEVEL_DICT
+	
+	WHERE FLAG='1'
+	
+	</select>
+	
+	<select id="queryUpdateLevelName" resultType="int"  parameterType="com.rionsoft.rcms.condition.system.ProjectLevelDictCondition">
+	SELECT 
+			 count(1)
+		FROM PROJECT_LEVEL_DICT
+		where
+		LEVEL_NAME=#{levelName}
+		AND LEVEL_ID!=#{levelId}
+	
+	</select>
+	<update id="updateProLevelDictListFlag">
+		update PROJECT_LEVEL_DICT 
+			set flag=#{flag} 
+			where LEVEL_ID in
+			<foreach item="levelId" index="index" collection="levelIdList" open="(" separator="," close=")" >
+		        #{levelId}
+		    </foreach>
+	</update>
+	<delete id="deleteLevelDictById">
+	delete from PROJECT_LEVEL_DICT 
+	        where LEVEL_ID = #{levelId} 
+	        and LEVEL_ID not in (
+	                select PROJ_LEVEL as LEVEL_ID from PROJECT
+	                        where PROJ_LEVEL = #{levelId} 
+	        )
+	        and  LEVEL_ID not in(
+	                 select PROJ_LEVEL as LEVEL_ID from PROJECT_HIS
+	                        where PROJ_LEVEL = #{levelId} 
+	        )
+	
+	</delete>
+</mapper>

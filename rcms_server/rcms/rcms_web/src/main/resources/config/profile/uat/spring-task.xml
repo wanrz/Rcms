@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans classpath:xsd/spring-beans-4.0.xsd
+						http://www.springframework.org/schema/context classpath:xsd/spring-context-4.0.xsd
+						http://www.springframework.org/schema/task classpath:xsd/spring-task-4.0.xml"
+	default-lazy-init="false">
+
+	<task:executor id="executor" pool-size="10" />
+
+	<context:annotation-config />
+	<!-- spring扫描注解的配置 -->
+	<context:component-scan base-package="com.rionsoft.rcms.web.task" />
+
+	<!-- 开启这个配置，spring才能识别@Scheduled注解 -->
+	<task:annotation-driven scheduler="qbScheduler"
+		mode="proxy" />
+
+	<task:scheduler id="qbScheduler" pool-size="10" />
+
+	<task:scheduled-tasks>
+		<task:scheduled cron="0 0/1 * * * *" method="demo"
+			ref="surveyTask" />
+	</task:scheduled-tasks>
+</beans>

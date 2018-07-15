@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper 
+  PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" 
+  "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.rionsoft.rcms.dao.department.IAuthDirMapper">
+  			
+	
+	<select id="queryTreeRoot" resultType="com.rionsoft.rcms.condition.listentry.department.TreeNodeListEntry">
+			<!-- 暂时不带角色查询 -->
+			SELECT  DIR_ID as dataId , DIR_NAME as name, DIR_SEQ as dirSeq,PARENT_ID as parentId
+			FROM AUTH_DIR order by IDX	
+	</select>
+	<select id="queryCountByDirSeq" resultType="Long">
+		select count(1) from auth_dir where DIR_SEQ like #{dirSeq}+'%' 
+	</select>
+	<select  id="queryAuthDirEntryByUserId"  resultType="com.rionsoft.rcms.entry.department.AuthDirEntry" parameterType="Long">
+		SELECT a.DIR_NAME as dirName,a.DIR_ID as dirId,a.SEQ as seq
+		FROM AUTH_DIR a
+		JOIN USER_INFO b
+		ON a.DIR_ID=b.DIR_ID
+		where b.user_id=#{userId}
+	</select>
+	
+	
+</mapper>
+

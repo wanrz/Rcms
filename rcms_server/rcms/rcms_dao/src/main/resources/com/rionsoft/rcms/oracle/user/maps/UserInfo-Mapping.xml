@@ -1,0 +1,273 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper 
+  PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" 
+  "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.rionsoft.rcms.dao.user.IUserInfoMapper">
+  	<resultMap type="com.rionsoft.rcms.condition.listentry.user.UserInfoListEntry" id="userList">
+  		<result property="userId" column="USER_ID" />
+		<result property="loginCode" column="LOGIN_CODE" />
+		<result property="password" column="PASSWORD" />
+		<result property="userName" column="USER_NAME" />
+		<result property="userCode" column="USER_CODE" />
+		<result property="photo" column="PHOTO" />
+		<result property="gender" column="GENDER" />  
+		<result property="nation" column="NATION" />
+		<result property="nativePlace" column="NATIVE_PLACE" />
+		<result property="currentAdd" column="CURRENT_ADD" />
+		<result property="professionalRanks" column="PROFESSIONAL_RANKS" />
+		<result property="cellPhone" column="CELL_PHONE" />
+		<result property="officePhone" column="OFFICE_PHONE" />
+		<result property="emergencyMan" column="EMERGENCY_MAN" />
+		<result property="emergencyPhone" column="EMERGENCY_PHONE" />
+		<result property="homePhone" column="HOME_PHONE" />
+		<result property="entryDate" column="ENTRY_DATE" />
+		<result property="userStatus" column="USER_STATUS" />
+		<result property="politicsStatus" column="POLITICS_STATUS" />
+		<result property="education" column="EDUCATION" /> 
+		<result property="degree" column="DEGREE" /> 
+		<result property="graduateSchool" column="GRADUATE_SCHOOL" /> 
+		<result property="specialty" column="SPECIALTY" />
+		<result property="graduateDate" column="GRADUATE_DATE" /> 
+		<result property="startWorkDate" column="START_WORK_DATE" /> 
+		<result property="birthday" column="BIRTHDAY" />   
+		<result property="idNumber" column="ID_NUMBER" />
+		<result property="email" column="EMAIL" />
+		<result property="qq" column="QQ" />
+		<result property="housingFundAccount" column="HOUSING_FUND_ACCOUNT" />
+		<result property="position" column="POSITION" />
+		<result property="dirId" column="DIR_ID" />
+		<result property="dirName" column="DIR_NAME" />
+		<result property="deptPosition" column="DEPT_POSITION" />
+		<result property="positionDegree" column="POSITION_DEGREE" />
+		<result property="positionTime" column="POSITION_TIME" />
+		<result property="contractType" column="CONTRACT_TYPE" />
+		<result property="contractStartTime" column="CONTRACT_START_TIME" />
+		<result property="contractEndTime" column="CONTRACT_END_TIME" />      
+		<result property="employeeType" column="EMPLOYEE_TYPE" />   
+		<result property="employeeWagesType" column="EMPLOYEE_WAGES_TYPE" /> 
+		<result property="probationStart" column="PROBATION_START" />
+		<result property="probationEnd" column="PROBATION_END" />
+  	</resultMap>
+	
+	<resultMap type="com.rionsoft.rcms.entry.department.AuthDirEntry" id="authDir">
+  		<result property="dirId" column="DIR_ID"/>
+  		<result property="parentId" column="PARENT_ID"/>
+  		<result property="dirName" column="DIR_NAME"/>
+  		<result property="dirCode" column="DIR_CODE"/>
+  		<result property="dirSeq" column="DIR_SEQ"/>
+  		<result property="idx" column="IDX"/>
+  		<result property="email" column="EMAIL"/>
+  		<result property="phone" column="PHONE"/>
+  		<result property="isLeaf" column="IS_LEAF"/>
+  		<result property="memo" column="MEMO"/>
+  		<result property="state" column="STATE"/>
+  		<result property="dirType" column="DIR_TYPE"/>
+  	</resultMap>
+  	
+  	<resultMap type="com.rionsoft.rcms.entry.system.BdDictDetailEntry" id="bdDictDetail">
+  		<result property="pkDict" column="PK_DICT"/>
+  		<result property="pkDetail" column="PK_DETAIL"/>
+  		<result property="detailCode" column="DETAIL_CODE"/>
+  		<result property="detailName" column="DETAIL_Name"/>
+  		<result property="flag" column="FLAG"/>
+  	</resultMap>
+  	
+  	<resultMap type="com.rionsoft.rcms.entry.role.AuthDataTypeEntry" id="authDataType">
+  		<result property="DataId" column="DATA_ID"/>
+  		<result property="DataName" column="DATA_NAME"/>
+  		<result property="DataCode" column="DATA_CODE"/>
+  	</resultMap>
+	<select id="queryByDataCode"  resultMap="userList" parameterType="com.rionsoft.rcms.condition.user.UserCondition">
+		SELECT 
+        	DISTINCT(a.USER_NAME),
+			a.LOGIN_CODE,
+			b.DIR_NAME,
+			a.USER_CODE,
+			a.USER_ID,
+			a.PASSWORD,
+			a.PHOTO,
+			a.GENDER,
+			a.NATION,
+			a.NATIVE_PLACE,
+			a.CURRENT_ADD,
+			a.PROFESSIONAL_RANKS,
+			a.CELL_PHONE,
+			a.OFFICE_PHONE,
+			a.EMERGENCY_MAN,
+			a.EMERGENCY_PHONE,
+			a.HOME_PHONE,
+			a.ENTRY_DATE,
+			a.POLITICS_STATUS,
+			a.EDUCATION,
+			a.DEGREE,
+			a.GRADUATE_SCHOOL,
+			a.SPECIALTY,
+			a.GRADUATE_DATE,
+			a.START_WORK_DATE,
+			a.BIRTHDAY,
+			a.ID_NUMBER,
+			a.EMAIL,
+			a.QQ,
+			a.HOUSING_FUND_ACCOUNT,
+			a.POSITION,
+			a.DIR_ID,
+			a.DEPT_POSITION,
+			a.POSITION_DEGREE,
+			a.POSITION_TIME,
+			a.CONTRACT_TYPE,
+			a.CONTRACT_START_TIME,
+			a.CONTRACT_END_TIME,
+			a.EMPLOYEE_TYPE,
+			a.EMPLOYEE_WAGES_TYPE,
+			a.PROBATION_START,
+			a.PROBATION_END,
+			(case a.USER_STATUS WHEN 0 THEN '无效' ELSE '有效' end) as USER_STATUS
+ 		FROM  USER_INFO a
+		LEFT JOIN AUTH_DIR b ON a.DIR_ID=b.DIR_ID
+		<if test="adminLoginCode != loginCodes and (dirSeq ==null or dirSeq =='') and (checkDirName2 ==null or checkDirName2 =='')">
+			join V_USER c on a.USER_ID = c.OTHER_USER_ID
+		</if>
+		<if test="adminLoginCode != loginCodes and (checkDirName2 !=null and checkDirName2 !='') or (checkDirName !=null and checkDirName !='')">
+			join V_USER_ALL c on a.USER_ID = c.OTHER_USER_ID
+		</if>
+		<where>
+			<if test="userId !=null and userId !=''">
+				and a.USER_ID = #{userId}
+			</if>
+			<if test="userStatus !=null and userStatus !=''">
+				and a.USER_STATUS = #{userStatus}
+			</if>
+			<if test="dirId !=null and dirId !=''">
+				and a.DIR_ID = #{dirId}
+			</if>
+			<if test="userName !=null and userName !=''">
+				and a.USER_NAME like '%'+#{userName}+'%'
+			</if>
+			<if test="loginCode !=null and loginCode !=''">
+				and a.LOGIN_CODE like '%'+#{loginCode}+'%'
+			</if>
+			<if test="dirName !=null and dirName !=''">
+				and b.DIR_NAME like '%'+#{dirName}+'%'
+			</if>
+			<if test="dirSeq !=null and dirSeq !=''">
+        		and b.DIR_SEQ LIKE '%'+#{dirSeq}+'%'
+			</if>
+			<if test="checkDirName2 !=null and checkDirName2 !=''">
+        		and b.DIR_SEQ LIKE '%'+#{checkDirName2}+'%'
+			</if>
+			<if test="adminLoginCode  != loginCodes">
+				and c.USER_ID = #{userIds}
+			</if>
+		</where>
+	</select>
+	<select id="queryDataCode"	parameterType="com.rionsoft.rcms.condition.user.UserCondition"	resultMap="authDataType">
+		SELECT	d.DATA_CODE
+		FROM 	ROLE_DATA_TYPE d
+		WHERE	d.DATA_ID 
+				IN	(SELECT 	DISTINCT(c.DATA_ID) 
+						FROM 	AUTH_ROLE_DATA c 
+        				WHERE 	c.ROLE_ID 
+        						IN	(SELECT		b.ROLE_ID 
+						 				FROM	USER_ROLE b 
+						 				WHERE	b.USER_ID=#{userId}	
+						)
+			)
+	</select>
+	<select id="queryAuthRoleByUserId" resultMap="authDataType" parameterType="com.rionsoft.rcms.condition.user.UserCondition">
+		SELECT	d.DATA_CODE
+		FROM 	ROLE_DATA_TYPE d
+		WHERE	d.DATA_ID 
+				IN	(SELECT 	DISTINCT(c.DATA_ID) 
+						FROM 	AUTH_ROLE_DATA c 
+        				WHERE 	c.ROLE_ID 
+        						IN	(SELECT		b.ROLE_ID 
+						 				FROM	USER_ROLE b 
+						 				WHERE	b.USER_ID=#{userId}	
+						)
+			)
+	</select>
+	
+	<update id="userArchive">
+	UPDATE USER_INFO 
+	SET USER_STATUS=#{userStatus} 
+	WHERE 
+		USER_ID IN
+		<foreach collection="userId" item="userId" open="(" close=")" separator=",">
+			#{userId}
+		</foreach>
+	</update>
+	
+	<select id="queryLoginCodeCount" parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT 
+			 count(1)
+		FROM USER_INFO
+		where
+			LOGIN_CODE =#{loginCode}
+	</select>
+	
+	<select id="queryPassword"  resultMap="userList">
+		SELECT 
+		     USER_ID,
+			 USER_NAME,
+			 PASSWORD
+		FROM USER_INFO
+		where
+			USER_ID =#{userId}
+	</select>
+	
+	<update id="updatePassword">
+	   UPDATE
+	   USER_INFO
+	   set PASSWORD = #{password}
+	   where 
+	      USER_ID = #{userId}
+	</update>
+	
+	<select id="queryAuthDir" resultMap="authDir" >
+	  SELECT
+	     DIR_ID,
+	     DIR_NAME
+	   FROM
+	     AUTH_DIR  
+    </select>
+    
+    <select id="queryContract" resultMap="bdDictDetail" >
+	  SELECT
+	     PK_DETAIL,
+	     DETAIL_NAME
+	   FROM
+	     BD_DICT_DETAIL
+	    WHERE PK_DICT = '2'  AND FLAG= '1'
+    </select>
+    
+    <select id="queryEmployee" resultMap="bdDictDetail" >
+	  SELECT
+	     PK_DETAIL,
+	     DETAIL_NAME
+	   FROM
+	     BD_DICT_DETAIL
+	    WHERE PK_DICT = '1'  AND FLAG='1'
+    </select>
+    
+    <select id="queryWages" resultMap="bdDictDetail" >
+	  SELECT
+	     PK_DETAIL,
+	     DETAIL_NAME
+	   FROM
+	     BD_DICT_DETAIL
+	    WHERE PK_DICT = '3'  AND FLAG='1'
+    </select>
+    
+    
+   <select id="selectExist" resultType="String" parameterType="com.rionsoft.rcms.entry.user.UserInfoEntry">
+	  SELECT
+	    LOGIN_CODE
+	   FROM
+	     USER_INFO
+	    WHERE LOGIN_CODE IN 
+	    <foreach collection="entryList" item="entry" open="(" close=")" separator=",">
+			#{entry.loginCode}
+		</foreach>
+    </select>
+</mapper>
+

@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper 
+  PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" 
+  "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.rionsoft.rcms.dao.project.impl.IProjectRecourceRefMapper">
+<resultMap type="com.rionsoft.rcms.condition.project.ProjectRecourceRefListEntry" id="projectRef">
+  		<result property="pkProj" column="PK_PROJ"/>
+  		<result property="projCode" column="PROJ_CODE"/>
+  		<result property="projName" column="PROJ_NAME"/>
+  		<result property="pmName" column="USER_NAME"/>
+  		<result property="number" column="WORKLOAD"/>
+  		<collection property="userList" javaType="ArrayList" resultMap="userListMap"></collection>
+  	</resultMap>
+  	<resultMap type="com.rionsoft.rcms.condition.project.ProjectUserListEntry" id="userListMap">
+  		<result property="userId" column="USER_ID"/>
+  		<result property="userName" column="USER_NAME"/>
+  		<result property="dirName" column="DIR_NAME"/>
+  		<result property="chargeProj" column="CHARGE_PROJ"/>
+  		
+  	</resultMap>
+  	
+  	<resultMap type="com.rionsoft.rcms.entry.project.ProjectRecourceRefEntry" id="projectUser">
+  		<result property="userId" column="USER_ID"/>
+  		<result property="pkProj" column="PK_PROJ"/>
+  		<result property="chargeProj" column="CHARGE_PROJ"/>
+  	</resultMap>
+  	
+  	<resultMap type="com.rionsoft.rcms.entry.user.UserInfoEntry" id="userList">
+  		<result property="userId" column="USER_ID"/>
+  		<result property="userName" column="USER_NAME"/>
+  	</resultMap>		
+	
+	<select id="queryProjResByDataCode" resultMap="projectRef" parameterType="com.rionsoft.rcms.condition.project.ProjectRecourceRefCondition">
+		SELECT 
+		    a.PK_PROJ,
+			a.PROJ_NAME,
+			a.PROJ_CODE,
+			b.USER_NAME,
+			count(c.PK_PROJ) as WORKLOAD
+		FROM PROJECT a
+		LEFT JOIN USER_INFO b ON b.USER_ID=a.PM_ID
+		LEFT JOIN PROJECT_RECOURCE_REF c ON c.PK_PROJ = a.PK_PROJ
+		JOIN AUTH_DIR d ON a.DEPT_ID=d.DIR_ID
+		<if test="adminLoginCode != loginCode and (dirSeq ==null or dirSeq =='')">
+			join V_USER_PROJECT e on a.PK_PROJ = e.PK_PROJ
+		</if>
+		<if test="adminLoginCode != loginCode and dirSeq !=null and dirSeq !=''">
+			join V_USER_PROJECT_ALL e on a.PK_PROJ = e.PK_PROJ
+		</if>
+		<where>
+			and a.STATUS != 06
+			<if test="projName !=null and projName !=''">
+				and	a.PROJ_NAME like '%'+#{projName}+'%'
+			</if>
+			<if test="projCode !=null and projCode !=''">
+				and a.PROJ_CODE like '%'+#{projCode}+'%'
+			</if>
+			<if test="deptName !=null and deptName !=''">
+				and d.DIR_NAME = #{deptName}
+			</if>
+			<if test="deptId !=null and deptId !=''">
+				and d.DIR_ID = #{deptId}
+			</if>
+			<if test="dirSeq !=null and dirSeq !=''">
+        		and d.DIR_SEQ LIKE '%'+#{dirSeq}+'%'
+			</if>
+			<if test="adminLoginCode  != loginCode">
+				and e.USER_ID = #{userId}
+			</if>
+		</where>
+		GROUP BY  a.PK_PROJ,a.PROJ_NAME,a.PROJ_CODE,b.USER_NAME
+	</select>
+	<select id="projectRfeQuery" resultMap="projectRef" parameterType="com.rionsoft.rcms.condition.project.ProjectRecourceRefCondition">
+		SELECT 
+		    a.PK_PROJ,
+			a.PROJ_NAME,
+			a.PROJ_CODE,
+			b.USER_NAME ,
+			count(c.PK_PROJ) as WORKLOAD
+		FROM PROJECT a
+		LEFT JOIN USER_INFO b ON b.USER_ID=a.PM_ID
+		LEFT JOIN PROJECT_RECOURCE_REF c ON c.PK_PROJ = a.PK_PROJ
+		<where>
+			<if test="projName !=null and projName !=''">
+				and a.PROJ_NAME like '%'+#{projName}+'%'
+			</if>
+			<if test="projCode !=null and projCode !=''">
+				and a.PROJ_CODE like '%'+#{projCode}+'%'
+			</if>
+		
+		</where>
+		GROUP BY  a.PK_PROJ,a.PROJ_NAME,a.PROJ_CODE,b.USER_NAME 
+	</select>
+	
+	<select id="projectUserQuery" resultMap="userListMap" parameterType="com.rionsoft.rcms.condition.project.ProjectRecourceRefCondition">
+		SELECT
+		    a.USER_ID, 
+			c.USER_NAME as USER_NAME,
+			b.DIR_NAME as DIR_NAME,
+			(case a.CHARGE_PROJ WHEN '1' THEN '否' ELSE '是' end) as CHARGE_PROJ
+		FROM PROJECT_RECOURCE_REF a
+		LEFT JOIN USER_INFO c on c.USER_ID = a.USER_ID
+		LEFT JOIN AUTH_DIR b on b.DIR_ID = c.DIR_ID  
+		
+		<where>
+			
+			<if test="pkProj !=null and pkProj !=''">
+				and a.PK_PROJ = #{pkProj}
+			</if>
+		</where>
+	</select>
+	
+	<select id="projectUserList" resultMap="userListMap" parameterType="com.rionsoft.rcms.condition.project.ProjectRecourceRefCondition">
+		SELECT 
+		    c.USER_ID ,
+			c.USER_NAME ,
+			b.DIR_NAME 
+		FROM USER_INFO c
+		LEFT JOIN AUTH_DIR b on b.DIR_ID = c.DIR_ID  
+		<where>
+			AND NOT EXISTS (
+				SELECT 1 FROM PROJECT_RECOURCE_REF a 
+     			WHERE
+     			c.USER_ID = a.USER_ID 
+     			AND a.PK_PROJ = #{pkProj})
+     		AND c.USER_STATUS='1'
+			<if test="userName !=null and userName !=''">
+				AND c.USER_NAME like '%'+#{userName}+'%'
+			</if>
+			<if test="deptName !=null and deptName !=''">
+				AND b.DIR_NAME like '%'+#{deptName}+'%'
+			</if>
+     	</where>
+	</select>
+	
+	<delete id="projectDeleteUser">
+		delete from PROJECT_RECOURCE_REF
+		where PK_PROJ = #{pkProj} and USER_ID in
+			<foreach collection="userIdList" item="userId" open="(" close=")" separator=",">
+				'${userId}'
+			</foreach>
+	</delete>
+
+	<select id="queryCodeByList" resultType="String">
+		select distinct b.proj_code from PROJECT_RECOURCE_REF a 
+		left join PROJECT b  on a.PK_PROJ = b.PK_PROJ
+		where a.PK_PROJ in
+		<foreach collection="pkList" item="pkProj" open="(" close=")" separator=",">
+			'${pkProj}'
+		</foreach>
+	</select>
+	<update id="updateProjectRefUser" parameterType="com.rionsoft.rcms.entry.project.ProjectRecourceRefEntry">
+		update PROJECT_RECOURCE_REF 
+				set CHARGE_PROJ = #{chargeProj}
+				where USER_ID = #{userId}
+				and PK_PROJ = #{pkProj}
+	</update>
+	
+	<select id="queryCountInfo" resultMap="userList">
+		SELECT
+		    distinct 
+			d.USER_ID,
+			d.USER_NAME
+		FROM PROJECT a
+		JOIN TASK b ON b.PK_PROJ=a.PK_PROJ
+		JOIN WORK_LOG c ON c.PK_TASK=b.PK_TASK
+		JOIN USER_INFO d ON d.USER_ID=c.USER_ID
+		where
+			a.PK_PROJ = #{pkProj} and 
+			c.USER_ID in 
+			<foreach collection="userIdList" item="userId" open="(" close=")" separator=",">
+				'${userId}'
+			</foreach>
+	</select>
+	
+	<select id="queryTaskCountInfo" resultMap="userList">
+		SELECT
+		    distinct 
+			d.USER_ID,
+			d.USER_NAME
+		FROM TASK b 
+		JOIN WORK_LOG c ON c.PK_TASK=b.PK_TASK
+		JOIN USER_INFO d ON d.USER_ID=c.USER_ID
+		where
+			b.PK_TASK = #{pkTask} and 
+			c.USER_ID in 
+			<foreach collection="userList" item="userId" open="(" close=")" separator=",">
+				'${userId}'
+			</foreach>
+	</select>
+	
+	<select id="queryProjectRefCharge" parameterType="java.lang.Long" resultType="java.lang.Integer">
+		SELECT 
+			 count(1)
+		FROM PROJECT_RECOURCE_REF
+		where
+			PK_PROJ=#{pkProj} and CHARGE_PROJ='2'
+	</select>
+</mapper>
+

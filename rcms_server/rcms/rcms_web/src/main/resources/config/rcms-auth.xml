@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans classpath:xsd/spring-beans-4.0.xsd
+        http://www.springframework.org/schema/context classpath:xsd/spring-context-4.0.xsd">
+
+	<!-- admin端默认权限过滤器 -->
+	<bean id="adminDefaultActionUrlFilterSpringBean"
+		class="com.rionsoft.rcms.web.common.filter.auth.AdminDefaultActionUrlFilter">
+		<property name="matcherUrl" value="/admin" />
+		<property name="ignoreUrls">
+			<list>
+				<value>/admin/login.ajax</value>
+				<value>/admin/login.do</value>
+				<value>/admin/index.do</value>
+				<value>/admin/loginout.do</value>
+			</list>
+		</property>
+	</bean>
+
+	
+</beans>

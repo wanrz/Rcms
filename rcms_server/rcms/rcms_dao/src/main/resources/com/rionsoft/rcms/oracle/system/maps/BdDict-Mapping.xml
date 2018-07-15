@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper 
+  PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" 
+  "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.rionsoft.rcms.dao.system.dict.bddict.IBdDictMapper">
+  	<resultMap type="com.rionsoft.rcms.entry.system.BdDictEntry" id="bdDict">
+  		<result property="pkDict" column="PK_DICT"/>
+  		<result property="dictCode" column="DICT_CODE"/>
+  		<result property="dictName" column="DICT_Name"/>
+  		<result property="version" column="VERSION"/>
+  		<result property="createUserId" column="CREATE_USER_ID"/>
+  		<result property="flag" column="FLAG"/>
+  		<result property="createTime" column="CREATE_TIME"/>
+  		<result property="updateTime" column="UPDATE_TIME"/>
+  		
+  	</resultMap>		
+	
+	
+	<!-- 查询字典大表 -->
+	<select id="queryBdDictList"  resultMap="bdDict" parameterType="com.rionsoft.rcms.condition.system.BdDictCondition" >
+	
+	Select PK_DICT,DICT_CODE
+	
+	from BD_DICT
+	WHERE 
+	
+		<if test="flag !=null and flag !=''">
+			FLAG=#{flag}
+		</if>
+	
+
+	</select>
+	
+	
+</mapper>

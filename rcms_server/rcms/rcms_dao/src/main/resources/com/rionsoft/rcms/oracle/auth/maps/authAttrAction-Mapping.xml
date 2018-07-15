@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.rionsoft.rcms.dao.role.IAuthAttrActionMapper">
+	<resultMap id="AuthAttrActionEntryMap"
+		type="com.rionsoft.rcms.entry.role.AuthAttrActionEntry">
+		<result column="ATTRIBUTE_ID" property="attributeId" />
+		<result column="ACTION_URL" property="actionUrl" />
+		<result column="CREATE_TIME" property="createTime" />
+		<result column="VERIFY_RESOURCE" property="verifyResource" />
+	</resultMap>
+
+	<select id="queryAllAttributeAction" resultMap="AuthAttrActionEntryMap">
+		SELECT
+		    ATTRIBUTE_ID,
+		    ACTION_URL,
+		    CREATE_TIME,
+		    VERIFY_RESOURCE
+		FROM
+		    AUTH_ATTR_ACTION
+		<where>
+			<if test="actionUrl != null and actionUrl != ''">
+				ACTION_URL = #{actionUrl}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryAllAttrActionByUserId" resultMap="AuthAttrActionEntryMap">
+		WITH roles AS(
+        		select ROLE_ID from USER_ROLE WHERE  USER_ID=#{userId}
+		),
+		attrIds as(
+		       SELECT DISTINCT(ATTRIBUTE_ID) FROM AUTH_ROLE_ATTRIBUTE WHERE ROLE_ID in(SELECT ROLE_ID from roles)
+		)
+		SELECT
+		    ATTRIBUTE_ID,
+		    ACTION_URL,
+		    CREATE_TIME,
+		    VERIFY_RESOURCE
+		FROM
+		    AUTH_ATTR_ACTION
+		WHERE 
+			#{loginCode}=#{adminLoginCode} OR
+		    ATTRIBUTE_ID IN (SELECT ATTRIBUTE_ID FROM  attrIds)
+	</select>
+	
+</mapper>

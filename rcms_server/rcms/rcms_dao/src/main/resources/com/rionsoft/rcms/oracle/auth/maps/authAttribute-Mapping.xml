@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.rionsoft.rcms.dao.role.IAuthAttributeMapper">
+	<resultMap type="com.rionsoft.rcms.condition.listentry.role.AuthMenuListEntry" id="AuthMenuListEntryMap">
+		<result property="menuName" column="MENU_NAME"/>
+		<result property="menuCode" column="MENU_CODE"/>
+		<collection property="attrList" javaType="ArrayList" resultMap="AuthAttributeListEntryMap"/>
+	</resultMap>
+	<resultMap type="com.rionsoft.rcms.condition.listentry.role.AuthAttributeListEntry" id="AuthAttributeListEntryMap">
+		<result property="attributeId" column="ATTRIBUTE_ID"/>
+		<result property="title" column="TITLE"/>
+		<result property="attributeCode" column="ATTRIBUTE_CODE"/>
+		<result property="operationType" column="OPERATION_TYPE"/>
+		<result property="menuName" column="MENU_NAME"/>
+	</resultMap>
+
+	<select id="queryMenuAttribute" resultMap="AuthMenuListEntryMap" parameterType="java.util.Map">
+		SELECT A.MENU_CODE,B.MENU_NAME,A.ATTRIBUTE_ID,A.TITLE,A.ATTRIBUTE_CODE,A.OPERATION_TYPE
+		FROM AUTH_ATTRIBUTE A
+		JOIN AUTH_MENU B ON B.MENU_CODE = A.MENU_CODE
+		JOIN AUTH_MENU C ON C.MENU_CODE = B.PARENT_MENU_CODE
+		ORDER BY C.IDX,B.IDX,A.IDX
+	</select>
+	
+	<select id="queryMenuAndAttr" resultMap="AuthAttributeListEntryMap">
+		SELECT A.MENU_NAME,B.TITLE
+		FROM AUTH_MENU A
+		JOIN AUTH_ATTRIBUTE B
+		  ON A.MENU_CODE = B.MENU_CODE
+		JOIN AUTH_ATTR_ACTION C
+		  ON B.ATTRIBUTE_ID = C.ATTRIBUTE_ID
+		WHERE C.ACTION_URL = #{actionUrl}
+	</select>
+</mapper>

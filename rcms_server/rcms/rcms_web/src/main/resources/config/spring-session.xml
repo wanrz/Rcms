@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans classpath:xsd/spring-beans-4.0.xsd">
+
+	<!-- admin端登录拦截器 -->
+	<bean id="adminSessionRepositoryFilter" class="com.rionsoft.rcms.web.common.filter.AdminSessionCheckFilter">
+		<property name="matcherUrlPrefix" value="/admin" />
+		<property name="ignoreUrls">
+			<list>
+				<value>/admin/login.ajax</value>
+				<value>/admin/login.do</value>
+				<value>/admin/loginout.do</value>
+			</list>
+		</property>
+	</bean>
+</beans>

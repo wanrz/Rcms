@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper 
+  PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" 
+  "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.rionsoft.rcms.dao.system.dict.protype.IProjectTypeDictMapper">
+  	<resultMap type="com.rionsoft.rcms.entry.system.ProjectTypeDictEntry" id="proTypeDict">
+  		<result property="typeId" column="TYPE_ID"/>
+  		<result property="typeCode" column="TYPE_CODE"/>
+  		<result property="typeName" column="TYPE_NAME"/>
+  		<result property="version" column="VERSION"/>
+  		<result property="createUserId" column="CREATE_USER_ID"/>
+  		<result property="flag" column="FLAG"/>
+  		<result property="createTime" column="CREATE_TIME"/>
+  		<result property="updateTime" column="UPDATE_TIME"/>
+  		
+  	</resultMap>		
+	<!-- 按类型查询字典 -->
+	<select id="ProTypeDictByConditioinList"  resultMap="proTypeDict" parameterType="com.rionsoft.rcms.condition.system.ProjectTypeDictCondition" >
+	Select TYPE_ID,TYPE_NAME,FLAG,VERSION,CREATE_USER_ID,CREATE_TIME,UPDATE_TIME,TYPE_CODE
+		from project_TYPE_DICT
+		WHERE 1=1
+		<if test="typeName !=null and typeName !=''">
+		and	TYPE_NAME=#{typeName}
+		</if>
+	</select>
+	<select id="queryProjectList"  resultMap="proTypeDict" >
+		Select TYPE_CODE,TYPE_NAME
+			from PROJECT_TYPE_DICT
+			WHERE FLAG='1'
+	
+	</select>
+	<select id="queryProjectChangeList"  resultMap="proTypeDict" >
+		Select TYPE_CODE,TYPE_NAME 
+			from PROJECT_TYPE_DICT
+	</select>
+	<select id="queryCodeCount" resultType="int"  parameterType="com.rionsoft.rcms.condition.system.ProjectTypeDictCondition" >
+		SELECT count(1)
+			FROM PROJECT_TYPE_DICT
+			where
+			TYPE_CODE=#{typeCode}
+			AND TYPE_ID!=#{typeId}
+	</select>
+	<update id="updateFlagByid">
+		update project_TYPE_DICT 
+			set flag='0' 
+			where type_id=#{typeId}
+	</update>
+	<update id="updateTypeIdListFlag">
+		update project_TYPE_DICT 
+			set flag=#{flag} 
+			where type_id in
+			<foreach item="typeId" index="index" collection="typeIdList" open="(" separator="," close=")" >
+		        #{typeId}
+		    </foreach>
+	</update>
+	<delete id="deleteTypeDictById">
+		delete from PROJECT_TYPE_DICT 
+	        where TYPE_CODE = #{typeCode} 
+	        and TYPE_CODE not in (
+	                select PROJ_TYPE as TYPE_CODE from PROJECT
+	                        where PROJ_TYPE = #{typeCode} 
+	        )
+	        and  TYPE_CODE not in(
+	                 select PROJ_TYPE as TYPE_CODE from PROJECT_HIS
+	                        where PROJ_TYPE = #{typeCode} 
+	        )
+	</delete>
+</mapper>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="com.rionsoft.rcms.dao.role.IAuthRoleMapper">
+	<resultMap type="com.rionsoft.rcms.condition.listentry.role.AuthRoleListEntry" id="roleDetail">
+		<id property="roleId" column="ROLE_ID"/>
+  		<result property="roleName" column="ROLE_NAME"/>
+  		<result property="roleDesc" column="ROLE_DESC"/>
+  		<collection property="dataIds"  ofType="long">
+  			<constructor>
+				<arg column="DATA_ID"/>
+			</constructor>
+  		</collection>
+  		<collection property="attributeIds"  ofType="long">
+  			<constructor>
+				<arg column="ATTRIBUTE_ID"/>
+			</constructor>
+  		</collection>
+	</resultMap>
+	<resultMap type="com.rionsoft.rcms.entry.role.AuthRoleEntry" id="authRoleMap">
+		<result property="roleId" column="ROLE_ID"/>
+  		<result property="roleName" column="ROLE_NAME"/>
+  		<result property="roleDesc" column="ROLE_DESC"/>
+	</resultMap>
+	
+	
+	
+	<select id="queryRoleDetail" resultMap="roleDetail">
+	select a.ROLE_ID,a.ROLE_NAME,a.ROLE_DESC ,b.ATTRIBUTE_ID, c.DATA_ID
+		from AUTH_ROLE a
+		left join AUTH_ROLE_ATTRIBUTE b
+		on a.ROLE_ID=b.ROLE_ID
+		left join AUTH_ROLE_DATA c 
+		on a.ROLE_ID=c.ROLE_ID
+		where a.role_id=#{roepId}
+	
+	</select>
+	<select id="queryAuthRoleByUserId" resultMap="authRoleMap">
+		SELECT a.ROLE_ID,a.ROLE_NAME,a.ROLE_DESC
+		FROM AUTH_ROLE a
+		WHERE 
+			#{adminLoginCode}=#{loginCode}
+			OR 	(a.ROLE_ID
+					IN (SELECT b.ROLE_ID
+						FROM 
+							USER_ROLE b
+						WHERE
+							b.USER_ID=#{userId})
+						) 
+	</select>
+
+
+</mapper>

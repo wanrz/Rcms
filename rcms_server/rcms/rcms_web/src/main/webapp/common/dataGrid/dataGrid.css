@@ -1,0 +1,89 @@
+@CHARSET "UTF-8";
+.dataGrid_body {
+	margin-bottom: 5px;
+}
+
+.dataGrid_thead {
+	background-color: #0063b1;
+	color: white;
+}
+
+.center {
+	TEXT-ALIGN: center
+}
+
+.pagination-20161212{
+	width: auto;
+	height: 40px;
+	*height:41px;
+	border: 1px solid #ccc;
+	border-collapse:collapse;
+	padding-left: 20px;
+	padding-top: 11px;
+}
+
+.pagination-20161212 li{
+	float: left;
+	vertical-align: middle;
+	list-style-type:none;
+}
+
+.pagination-20161212 input[type='text']{
+	width: 30px;
+	height: 13px;
+	line-height: 13px;	
+	background-color: #fff;
+	margin: auto 2px;
+	outline: none;
+	border: 1px solid #ccc;
+	text-align: center;
+}
+
+.pagination-20161212 .p_btn{
+	width: 20px;
+	height: 18px;
+/* 	margin-top: 11px; */
+	margin-left: 5px;
+}
+
+.pagination-20161212 .p_btn img{
+	display: block;
+}
+
+.pagination-20161212 .p_btn_over{
+	cursor: pointer;
+	background: url("images/bg.jpg") no-repeat center;
+}
+
+
+.pagination-20161212 .p_split{
+	height: 18px;
+	width: 2px;
+/* 	margin: 11px 5px; */
+	margin-left:  5px;
+}
+
+.pagination-20161212 .p_split img{
+	display: block;
+}
+
+.pagination-20161212 img{
+	vertical-align: middle;
+	margin: 1px;
+}
+
+
+.pagination-20161212 .p_desc{
+	float: right;
+/* 	margin:11px 20px; */
+	margin-left: 20px;
+	height: 18px;
+	line-height: 18px;
+}
+
+.pagination-20161212 .p_input{
+/* 	margin: 11px 10px;  */
+	margin-left: 10px; 
+	height: 18px;
+	line-height: 18px;
+}

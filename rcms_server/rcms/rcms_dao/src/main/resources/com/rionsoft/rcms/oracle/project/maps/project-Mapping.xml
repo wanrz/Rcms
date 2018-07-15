@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper 
+  PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" 
+  "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.rionsoft.rcms.dao.project.impl.IProjectMapper">
+  	<resultMap type="com.rionsoft.rcms.entry.project.ProjectEntry" id="projectList">
+  		<result property="pkProj" column="PK_PROJ" />
+		<result property="projName" column="PROJ_NAME" />
+		<result property="projCode" column="PROJ_CODE" />
+		<result property="deptId" column="DEPT_ID" />
+		<result property="applyDate" column="APPLY_DATE" />
+		<result property="status" column="STATUS" />
+		<result property="clientNames" column="CLIENT_NAMES" />  
+		<result property="pmId" column="PM_ID" />
+		<result property="chargeMan" column="CHARGE_MAN" />
+		<result property="projEndDate" column="PROJ_END_DATE" />
+		<result property="projShName" column="PROJ_SH_NAME" />
+		<result property="budgetSource" column="BUDGET_SOURCE" />
+		<result property="remark" column="REMARK" />
+		<result property="workload" column="WORKLOAD" />
+		<result property="expCost" column="EXP_COST" />
+		<result property="projectExp" column="PROJECT_EXP" />
+		<result property="deliveryDesc" column="DELIVERY_DESC" />
+		<result property="feasibilityReport" column="FEASIBILITY_REPORT" />
+		<result property="includeTech" column="INCLUDE_TECH" />
+		<result property="riskDesc" column="RISK_DESC" />
+		<result property="expStartDate" column="EXP_START_DATE" />
+		<result property="expEndDate" column="EXP_END_DATE" />
+		<result property="relStartDate" column="REL_START_DATE" />
+		<result property="relEndDate" column="REL_END_DATE" />
+		<result property="expSaleAmount" column="EXP_SALE_AMOUNT" />
+		<result property="projDesc" column="PROJ_DESC" />
+		<result property="version"  column="VERSION"/>
+		<result property="updateTime" column="UPDATE_TIME" />
+		<result property="createUserId"  column="CREATE_USER_ID"/>
+		<result property="projType"  column="PROJ_TYPE"/>
+		<result property="projLevel"  column="PROJ_LEVEL"/>
+		<result property="urgentLevel"  column="URGENT_LEVEL"/>
+		<result property="busId"  column="BUS_ID"/>
+  	</resultMap>
+  	
+  	<resultMap type="com.rionsoft.rcms.condition.project.ProjectListEntry" id="projectListEntry">
+  		<result property="pkProj" column="PK_PROJ" />
+		<result property="projName" column="PROJ_NAME" />
+		<result property="projCode" column="PROJ_CODE" />
+		<result property="deptId" column="DEPT_ID" />
+		<result property="applyDate" column="APPLY_DATE" />
+		<result property="status" column="STATUS" />
+		<result property="clientNames" column="CLIENT_NAMES" />  
+		<result property="pmId" column="PM_ID" />
+		<result property="chargeMan" column="CHARGE_MAN" />
+		<result property="projEndDate" column="PROJ_END_DATE" />
+		<result property="projShName" column="PROJ_SH_NAME" />
+		<result property="budgetSource" column="BUDGET_SOURCE" />
+		<result property="remark" column="REMARK" />
+		<result property="workload" column="WORKLOAD" />
+		<result property="expCost" column="EXP_COST" />
+		<result property="projectExp" column="PROJECT_EXP" />
+		<result property="deliveryDesc" column="DELIVERY_DESC" />
+		<result property="feasibilityReport" column="FEASIBILITY_REPORT" />
+		<result property="includeTech" column="INCLUDE_TECH" />
+		<result property="riskDesc" column="RISK_DESC" />
+		<result property="expStartDate" column="EXP_START_DATE" />
+		<result property="expEndDate" column="EXP_END_DATE" />
+		<result property="relStartDate" column="REL_START_DATE" />
+		<result property="relEndDate" column="REL_END_DATE" />
+		<result property="expSaleAmount" column="EXP_SALE_AMOUNT" />
+		<result property="projDesc" column="PROJ_DESC" />
+		<result property="version"  column="VERSION"/>
+		<result property="updateTime" column="UPDATE_TIME" />
+		<result property="createUserId"  column="CREATE_USER_ID"/>
+		<result property="projType"  column="PROJ_TYPE"/>
+		<result property="typeName"  column="TYPE_NAME"/>
+		<result property="projLevel"  column="PROJ_LEVEL"/>
+		<result property="urgentLevel"  column="URGENT_LEVEL"/>
+		<result property="dirName"  column="DIR_NAME"/>
+		<result property="modifyUserName"  column="MODIFY_USER_NAME"/>
+		<result property="pmName"  column="PM_NAME"/>
+		<result property="levelName"  column="LEVEL_NAME"/>
+		<result property="urgentName"  column="URGENT_NAME"/>
+		<result property="busId"  column="BUS_ID"/>
+		<result property="busName"  column="BUS_NAME"/>
+  	</resultMap>
+	
+	<select id="projectQuery" resultMap="projectListEntry" parameterType="com.rionsoft.rcms.condition.project.ProjectCondition">
+		SELECT top 100 percent
+			a.PK_PROJ,
+			a.PROJ_NAME,
+			a.PROJ_CODE,
+			a.DEPT_ID,
+			a.APPLY_DATE,
+			a.STATUS,
+			a.CLIENT_NAMES,
+			a.PM_ID,
+			a.CHARGE_MAN,
+			a.PROJ_END_DATE,
+			a.PROJ_SH_NAME,
+			a.VERSION,
+			a.EXP_START_DATE,
+			c.USER_NAME as PM_NAME,
+			b.DIR_NAME,
+			(SELECT k.UPDATE_TIME FROM PROJECT k WHERE a.PK_PROJ=k.PK_PROJ AND k.STATUS='06') AS UPDATE_TIME,
+			(SELECT u.USER_NAME FROM PROJECT h 
+			    LEFT JOIN USER_INFO u ON u.USER_ID=h.MODIFY_USER_ID
+			    WHERE a.PK_PROJ=h.PK_PROJ AND h.STATUS='06') AS MODIFY_USER_NAME
+		FROM PROJECT a
+		LEFT JOIN AUTH_DIR b on b.DIR_ID=a.DEPT_ID
+		left join USER_INFO c on a.PM_ID = c.USER_ID
+		<if test="adminLoginCode != loginCode and (dirSeq ==null or dirSeq =='')">
+			join V_USER_PROJECT d on a.PK_PROJ = d.PK_PROJ
+		</if>
+		<if test="adminLoginCode != loginCode and dirSeq !=null and dirSeq !=''">
+			join V_USER_PROJECT_ALL d on a.PK_PROJ = d.PK_PROJ
+		</if>
+		<where>
+			<if test="projName !=null and projName !=''">
+				and a.PROJ_NAME like '%'+#{projName}+'%'
+			</if>
+			<if test="projCode !=null and projCode !=''">
+				and a.PROJ_CODE like '%'+#{projCode}+'%'
+			</if>
+			<if test="deptId !=null and deptId !=''">
+				and a.DEPT_ID = #{deptId}
+			</if>
+			<if test="deptName !=null and deptName !=''">
+				and a.DEPT_NAME = #{deptName}
+			</if>
+			<if test="status == '00'">
+				and a.STATUS != 06
+			</if>
+			<if test="status !=null and status !='' and status != '00'">
+				and a.STATUS = #{status}
+			</if>
+			<if test="dirSeq !=null and dirSeq !=''">
+        		and b.DIR_SEQ LIKE '%'+#{dirSeq}+'%'
+			</if>
+			<if test="adminLoginCode  != loginCode">
+				and d.USER_ID = #{userId}
+			</if>
+		</where>
+		order by a.APPLY_DATE desc
+	</select>
+	<select id="queryProjectByProjOperator" resultMap="projectListEntry" parameterType="com.rionsoft.rcms.condition.project.ProjectCondition">
+		SELECT TOP 100 PERCENT
+		    a.PK_PROJ,
+			a.PROJ_NAME,
+			a.PROJ_CODE,
+			a.STATUS,
+			a.EXP_START_DATE,
+			a.EXP_END_DATE,
+			b.USER_NAME as PM_NAME,
+			(select count(PK_PROJ) from PROJECT_RECOURCE_REF r where a.PK_PROJ = r.PK_PROJ) AS WORKLOAD
+		FROM PROJECT a
+		LEFT JOIN USER_INFO b ON b.USER_ID=a.PM_ID
+		LEFT JOIN AUTH_DIR d ON a.DEPT_ID=d.DIR_ID
+		<if test="loginCode == 'false' ">
+			inner JOIN V_USER_PROJECT_ALL e 
+			on a.PK_PROJ = e.PK_PROJ
+			and e.USER_ID = #{userId}
+		</if>
+		<where>
+			<if test="status == 10 ">
+				and a.STATUS != 06
+			</if>
+			<if test="status == 15 ">
+				and a.STATUS in (03,04,05)
+			</if>
+			<if test="status == 20 ">
+				and a.STATUS in (02,03,04,05,06)
+			</if>
+			<if test="status != 10 and status != 15 and status != 20 and  status != null and status != ''">
+				and a.STATUS = #{status}
+			</if>
+			<if test="projName !=null and projName !=''">
+				and	a.PROJ_NAME like '%'+#{projName}+'%'
+			</if>
+			<if test="projCode !=null and projCode !=''">
+				and a.PROJ_CODE like '%'+#{projCode}+'%'
+			</if>
+			<if test="deptName !=null and deptName !=''">
+				and d.DIR_NAME = #{deptName}
+			</if>
+			<if test="deptId !=null and deptId !=''">
+				and d.DIR_ID = #{deptId}
+			</if>
+			<if test="dirSeq !=null and dirSeq !=''">
+        		and d.DIR_SEQ LIKE '%'+#{dirSeq}+'%'
+			</if>
+		</where>
+		order by a.PK_PROJ
+	</select>
+	<select id="queryProject" resultMap="projectListEntry">
+		SELECT 
+			a.PK_PROJ,
+			a.PROJ_NAME,
+			a.PROJ_CODE,
+			a.DEPT_ID,
+			a.APPLY_DATE,
+			a.STATUS,
+			a.CLIENT_NAMES,
+			a.PM_ID,
+			a.CHARGE_MAN,
+			a.PROJ_END_DATE,
+			a.PROJ_SH_NAME,
+			a.BUDGET_SOURCE,
+			a.REMARK,
+			a.WORKLOAD,
+			a.EXP_COST,
+			a.PROJECT_EXP,
+			a.DELIVERY_DESC,
+			a.FEASIBILITY_REPORT,
+			a.INCLUDE_TECH,
+			a.RISK_DESC,
+			a.EXP_START_DATE,
+			a.EXP_END_DATE,
+			a.REL_START_DATE,
+			a.REL_END_DATE,
+			a.EXP_SALE_AMOUNT,
+			a.PROJ_DESC,
+			a.VERSION,
+			a.PROJ_TYPE,
+			a.PROJ_LEVEL,
+			a.URGENT_LEVEL,
+			a.BUS_ID,
+			b.DIR_NAME,
+			c.USER_NAME AS PM_NAME,
+			d.URGENT_NAME,
+			e.LEVEL_NAME,
+			f.TYPE_NAME,
+			g.USER_NAME AS BUS_NAME
+		FROM PROJECT a
+		LEFT JOIN AUTH_DIR b ON b.DIR_ID=a.DEPT_ID
+		LEFT JOIN USER_INFO c ON a.PM_ID = c.USER_ID
+		LEFT JOIN PROJECT_URGENT_DICT d ON a.URGENT_LEVEL = d.URGENT_ID
+		LEFT JOIN PROJECT_LEVEL_DICT e ON a.PROJ_LEVEL = e.LEVEL_ID
+		LEFT JOIN PROJECT_TYPE_DICT f on a.PROJ_TYPE = f.TYPE_CODE
+		LEFT JOIN USER_INFO g ON a.BUS_ID = g.USER_ID
+		<where>
+			<if test="pkProj !=null and pkProj !=''">
+				and a.PK_PROJ = #{pkProj}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryProjectDetails" parameterType="com.rionsoft.rcms.condition.project.ProjectCondition" resultMap="projectListEntry">
+		SELECT TOP 100 PERCENT
+			a.PK_PROJ,a.PROJ_NAME,a.PROJ_CODE,a.DEPT_ID,a.APPLY_DATE,a.STATUS,a.CLIENT_NAMES,a.PM_ID,a.CHARGE_MAN,
+			a.PROJ_END_DATE,a.PROJ_SH_NAME,a.BUDGET_SOURCE,a.REMARK,a.WORKLOAD,a.EXP_COST,a.PROJECT_EXP,a.DELIVERY_DESC,
+			a.FEASIBILITY_REPORT,a.INCLUDE_TECH,a.RISK_DESC,a.EXP_START_DATE,a.EXP_END_DATE,a.REL_START_DATE,
+			a.REL_END_DATE,a.EXP_SALE_AMOUNT,a.PROJ_DESC,a.VERSION,a.UPDATE_TIME,a.CREATE_USER_ID,a.PROJ_LEVEL,
+			a.URGENT_LEVEL,b.TYPE_NAME as PROJ_TYPE,c.DIR_NAME,d.USER_NAME as MODIFY_USER_NAME,e.USER_NAME as PM_NAME,
+			f.URGENT_NAME,g.LEVEL_NAME,h.USER_NAME as BUS_NAME
+		FROM PROJECT_HIS a
+		left join PROJECT_TYPE_DICT b on a.proj_type = b.type_code
+		left join AUTH_DIR c on a.DEPT_ID = c.DIR_ID
+		left join USER_INFO d on a.MODIFY_USER_ID = d.USER_ID
+		left join USER_INFO e on a.PM_ID = e.USER_ID
+		left join PROJECT_URGENT_DICT f on a.URGENT_LEVEL = f.URGENT_ID and f.FLAG = '1'
+		left join PROJECT_LEVEL_DICT g on a.PROJ_LEVEL = g.LEVEL_ID and g.FLAG = '1'
+		left join USER_INFO h on a.BUS_ID = h.USER_ID
+		where
+			a.PK_PROJ = #{pkProj}
+		order by version desc
+	</select>
+	
+	<select id="queryProjectContrast" resultMap="projectListEntry">
+		SELECT a.PK_PROJ,a.PROJ_NAME,a.PROJ_CODE,a.APPLY_DATE,a.STATUS,a.CLIENT_NAMES,a.PM_ID,a.CHARGE_MAN,
+			a.PROJ_END_DATE,a.PROJ_SH_NAME,a.BUDGET_SOURCE,a.REMARK,a.WORKLOAD,a.EXP_COST,a.PROJECT_EXP,
+			a.DELIVERY_DESC,a.FEASIBILITY_REPORT,a.INCLUDE_TECH,a.RISK_DESC,a.EXP_START_DATE,a.EXP_END_DATE,
+			a.REL_START_DATE,a.REL_END_DATE,a.EXP_SALE_AMOUNT,a.PROJ_DESC,a.VERSION,a.UPDATE_TIME,a.CREATE_USER_ID,
+			a.PROJ_LEVEL,a.URGENT_LEVEL,b.TYPE_NAME as PROJ_TYPE,c.DIR_NAME,
+			e.USER_NAME as PM_NAME,f.URGENT_NAME,g.LEVEL_NAME,h.USER_NAME as BUS_NAME
+		FROM PROJECT_HIS a
+		left join PROJECT_TYPE_DICT b on a.proj_type = b.type_code
+		left join AUTH_DIR c on a.DEPT_ID = c.DIR_ID
+		left join USER_INFO e on a.PM_ID = e.USER_ID
+		left join PROJECT_URGENT_DICT f on a.URGENT_LEVEL = f.URGENT_ID and f.FLAG = '1'
+		left join PROJECT_LEVEL_DICT g on a.PROJ_LEVEL = g.LEVEL_ID and g.FLAG = '1'
+		left join USER_INFO h on a.BUS_ID = h.USER_ID
+		where
+			a.PK_PROJ = #{pkProj} and (a.VERSION = #{version} or a.VERSION = #{version} - 1)
+		order by version desc
+	</select>
+	
+	<select id="queryNumber" parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT 
+			 count(1)
+		FROM PROJECT
+		where
+			PROJ_CODE like '${code2}%'
+	</select>
+	
+	<select id="queryByList" resultType="String">
+		select distinct b.PROJ_CODE from TASK a 
+		left join PROJECT b on a.PK_PROJ = b.PK_PROJ
+		where a.PK_PROJ in
+		<foreach collection="pkList" item="pkProj" open="(" close=")" separator=",">
+			'${pkProj}'
+		</foreach>
+	</select>
+	<select id="queryProjectByDataCode" resultMap="projectListEntry" parameterType="com.rionsoft.rcms.condition.project.ProjectCondition">
+		SELECT top 100 percent
+			a.PK_PROJ,
+			a.PROJ_NAME,
+			a.PROJ_CODE,
+			a.DEPT_ID,
+			a.APPLY_DATE,
+			a.EXP_START_DATE,
+			a.EXP_END_DATE,
+			a.STATUS,
+			a.CLIENT_NAMES,
+			a.PM_ID,
+			a.CHARGE_MAN,
+			a.PROJ_END_DATE,
+			a.PROJ_SH_NAME,
+			a.VERSION,
+			c.USER_NAME as PM_NAME,
+			b.DIR_NAME,
+			(SELECT k.UPDATE_TIME FROM PROJECT k WHERE a.PK_PROJ=k.PK_PROJ AND k.STATUS='06') AS UPDATE_TIME,
+			(SELECT u.USER_NAME FROM PROJECT h 
+			    LEFT JOIN USER_INFO u ON u.USER_ID=h.MODIFY_USER_ID
+			    WHERE a.PK_PROJ=h.PK_PROJ AND h.STATUS='06') AS MODIFY_USER_NAME
+		FROM PROJECT a
+		LEFT JOIN AUTH_DIR b on b.DIR_ID=a.DEPT_ID
+		left join USER_INFO c on a.PM_ID = c.USER_ID
+		<if test="adminLoginCode != loginCode and (dirSeq ==null or dirSeq =='')">
+			join V_USER_PROJECT d on a.PK_PROJ = d.PK_PROJ
+		</if>
+		<if test="adminLoginCode != loginCode and dirSeq !=null and dirSeq !=''">
+			join V_USER_PROJECT_ALL d on a.PK_PROJ = d.PK_PROJ
+		</if>
+		<where>
+			<if test="projName !=null and projName !=''">
+				and a.PROJ_NAME like '%'+#{projName}+'%'
+			</if>
+			<if test="projCode !=null and projCode !=''">
+				and a.PROJ_CODE like '%'+#{projCode}+'%'
+			</if>
+			<if test="deptId !=null and deptId !=''">
+				and a.DEPT_ID = #{deptId}
+			</if>
+			<if test="deptName !=null and deptName !=''">
+				and b.DIR_NAME like '%'+#{deptName}+'%'
+			</if>
+			<if test="status == '00'">
+				and a.STATUS != 06
+			</if>
+			<if test="status == '10'">
+				and a.STATUS != 01 
+			</if>
+			<if test="status !=null and status !='' and status != '00' and status != '10'">
+				and a.STATUS = #{status}
+			</if>
+			<if test="dirSeq !=null and dirSeq !=''">
+        		and b.DIR_SEQ LIKE '%'+#{dirSeq}+'%'
+			</if>
+			<if test="adminLoginCode  != loginCode">
+				and d.USER_ID = #{userId}
+			</if>
+		</where>
+		order by a.APPLY_DATE desc
+	</select>
+	
+	<select id="projectContrast" resultMap="projectListEntry" parameterType="com.rionsoft.rcms.condition.project.ProjectCondition">
+		SELECT a.PK_PROJ,a.PROJ_NAME,a.PROJ_CODE,a.APPLY_DATE,a.STATUS,a.CLIENT_NAMES,a.PM_ID,a.CHARGE_MAN,
+			a.PROJ_END_DATE,a.PROJ_SH_NAME,a.BUDGET_SOURCE,a.REMARK,a.WORKLOAD,a.EXP_COST,a.PROJECT_EXP,
+			a.DELIVERY_DESC,a.FEASIBILITY_REPORT,a.INCLUDE_TECH,a.RISK_DESC,a.EXP_START_DATE,a.EXP_END_DATE,
+			a.REL_START_DATE,a.REL_END_DATE,a.EXP_SALE_AMOUNT,a.PROJ_DESC,a.VERSION,a.UPDATE_TIME,a.CREATE_USER_ID,
+			a.PROJ_LEVEL,a.URGENT_LEVEL,b.TYPE_NAME as PROJ_TYPE,c.DIR_NAME,
+			e.USER_NAME as PM_NAME,f.URGENT_NAME,g.LEVEL_NAME
+		FROM PROJECT_HIS a
+		left join PROJECT_TYPE_DICT b on a.proj_type = b.type_code
+		left join AUTH_DIR c on a.DEPT_ID = c.DIR_ID
+		left join USER_INFO e on a.PM_ID = e.USER_ID
+		left join PROJECT_URGENT_DICT f on a.URGENT_LEVEL = f.URGENT_ID and f.FLAG = '1'
+		left join PROJECT_LEVEL_DICT g on a.PROJ_LEVEL = g.LEVEL_ID and g.FLAG = '1'
+		where
+			a.PK_PROJ = #{pkProj} and (a.VERSION = #{version} or a.VERSION = #{version} - 1)
+		order by version desc
+	</select>
+	<select id="projectListByApprovalTime" resultMap="projectListEntry" parameterType="com.rionsoft.rcms.condition.project.ProjectCondition">
+		SELECT TOP 100 PERCENT
+		    a.PK_PROJ,
+			a.PROJ_NAME,
+			a.PROJ_CODE,
+			a.STATUS,
+			a.EXP_START_DATE,
+			a.EXP_END_DATE,
+			(select USER_NAME from USER_INFO u where u.USER_ID = a.PM_ID) as PM_NAME,
+			(select count(PK_PROJ) from PROJECT_RECOURCE_REF r where a.PK_PROJ = r.PK_PROJ) AS WORKLOAD
+		from  PROJECT a
+		LEFT JOIN AUTH_DIR d ON a.DEPT_ID=d.DIR_ID
+	    <if test="loginCode == 'false' ">
+	   		inner join V_DEPT_USER_PROJECT v
+	   		ON a.PK_PROJ = v.PK_PROJ
+	   		and v.USER_ID = #{userId}
+	    </if>
+		<where>
+			<if test="status == 15 ">
+				and a.STATUS in (02,03,04,05)
+			</if>
+			<if test="status == 20 ">
+				and a.STATUS in (02,03,04,05,06)
+			</if>
+			<if test="status != 15 and status != 20 and  status != null and status != ''">
+				and a.STATUS = #{status}
+			</if>
+			<if test="projName !=null and projName !=''">
+				and	a.PROJ_NAME like '%'+#{projName}+'%'
+			</if>
+			<if test="projCode !=null and projCode !=''">
+				and a.PROJ_CODE like '%'+#{projCode}+'%'
+			</if>
+			<if test="deptName !=null and deptName !=''">
+				and d.DIR_NAME = #{deptName}
+			</if>
+			<if test="deptId !=null and deptId !=''">
+				and d.DIR_ID = #{deptId}
+			</if>
+			<if test="dirSeq !=null and dirSeq !=''">
+        		and d.DIR_SEQ LIKE '%'+#{dirSeq}+'%'
+			</if>
+		</where>
+		order by a.PK_PROJ
+	</select>
+	<select id="userInProjectByProjOperator" resultMap="projectListEntry">
+	 select p.PK_PROJ,
+        (select PROJ_NAME from PROJECT where PK_PROJ = p.PK_PROJ) as PROJ_NAME,
+        p.USER_ID as PM_ID,
+        (select USER_NAME from USER_INFO where USER_ID = p.USER_ID) as PM_NAME
+        from PROJECT_RECOURCE_REF p
+        <if test="loginCode == 'false' ">
+        	inner join V_USER_PROJECT_ALL v 
+        	on p.PK_PROJ = v.PK_PROJ 
+        	and v.USER_ID = #{userId}
+        </if>
+		order by p.USER_ID
+	</select>
+</mapper>
+

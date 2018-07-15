@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.rionsoft.rcms.dao.role.IAuthMenuMapper">
+
+	
+	<resultMap id="authMenuList"
+		type="com.rionsoft.rcms.entry.role.AuthMenuEntry">
+		<result column="MENU_ID" property="menuId"/>
+		<result column="MENU_NAME" property="menuName" />
+		<result column="MENU_CODE" property="menuCode"/>
+		<result column="PARENT_MENU_CODE" property="parentMenuCode" />
+		<result column="IS_LEAF" property="isLeaf" />
+		<result column="IDX" property="idx" />
+		<result column="ACTION_URL" property="actionUrl"/>
+	</resultMap>
+	
+	<!-- 根据用户id查询用户授权资源信息 -->
+	<select id="queryAuthMenuByUserId" resultMap="authMenuList">
+		WITH childMenuCode AS(
+	        SELECT DISTINCT(c.MENU_CODE) FROM AUTH_ATTRIBUTE c
+	        WHERE c.ATTRIBUTE_ID IN(
+	                SELECT b.ATTRIBUTE_ID FROM 
+	                AUTH_ROLE_ATTRIBUTE b
+	                WHERE 
+	                	 b.ROLE_ID IN(SELECT a.ROLE_ID FROM USER_ROLE a WHERE a.USER_ID=#{userId}) 
+			)
+		),
+		childMenu AS(
+		        SELECT * FROM AUTH_MENU d
+		        WHERE 
+		        #{loginCode}=#{adminLoginCode} 
+	            OR d.MENU_CODE IN (SELECT * FROM childMenuCode)
+		)
+		SELECT * FROM childMenu
+		UNION
+		SELECT * FROM AUTH_MENU e WHERE e.MENU_CODE IN(SELECT PARENT_MENU_CODE FROM childMenu)
+	</select>
+
+</mapper>

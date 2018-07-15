@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+  PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" 
+  "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.rionsoft.rcms.dao.weeklyReport.IWeeklyReportFillMapper">
+	<resultMap type="com.rionsoft.rcms.entry.weeklyReport.ProjectRptWeeklyEntry" id="projectRptWeeklyEntry">
+		<result property="proRptId"        	  column="PRO_RPT_ID"/>
+		<result property="pkProj"       	  column="PK_PROJ"/>
+		<result property="weekBeginDate"      column="WEEK_BEGIN_DATE"/>
+		<result property="weekEndDate"     	  column="WEEK_END_DATE"/>
+		<result property="milePost"   	      column="MILE_POST"/>
+		<result property="curRpt" 		      column="CUR_RPT"/>
+		<result property="curRisk" 		      column="CUR_RISK"/>
+		<result property="nextRpt" 		      column="NEXT_RPT"/>
+		<result property="status" 		 	  column="STATUS"/>
+		<result property="approvalOpinions"   column="APPROVAL_OPINIONS"/>
+		<result property="createUserId" 	  column="CREATE_USER_ID" />
+		<result property="createTime"  	  	  column="CREATE_TIME"/>
+		<result property="modifyUserId" 	  column="MODIFY_USER_ID" />
+		<result property="updateTime" 		  column="UPDATE_TIME" />
+	</resultMap>
+	<resultMap type="com.rionsoft.rcms.condition.weeklyReport.ProjectRptWeeklyListEntry" id="rptWeeklyListEntry">
+		<result property="proRptId"        	  column="PRO_RPT_ID"/>
+		<result property="pkProj"       	  column="PK_PROJ"/>
+		<result property="projName"           column="PROJ_NAME"/>
+		<result property="projCode"           column="PROJ_CODE"/>
+		<result property="weekBeginDate"      column="WEEK_BEGIN_DATE"/>
+		<result property="weekEndDate"     	  column="WEEK_END_DATE"/>
+		<result property="milePost"   	      column="MILE_POST"/>
+		<result property="curRpt" 		      column="CUR_RPT"/>
+		<result property="curRisk" 		      column="CUR_RISK"/>
+		<result property="nextRpt" 		      column="NEXT_RPT"/>
+		<result property="status" 		 	  column="STATUS"/>
+		<result property="approvalUserName"   column="APPROVAL_USER_NAME"/>
+		<result property="approvalTime"       column="APPROVAL_TIME"/>
+		<result property="approvalOpinions"   column="APPROVAL_OPINIONS"/>
+		<result property="createUserName" 	  column="CREATE_USER_NAME" />
+		<result property="createTime"  	  	  column="CREATE_TIME"/>
+		<result property="modifyUserId" 	  column="APPROVER_NAME" />
+		<result property="approverTime" 	  column="APPROVER_TIME" />
+		<result property="version" 	          column="VERSION" />
+	</resultMap>
+	<select id="weeklyReportFillList" resultMap="projectRptWeeklyEntry">
+		select PRO_RPT_ID,
+			   PK_PROJ,
+			   WEEK_BEGIN_DATE,
+			   WEEK_END_DATE,
+			   MILE_POST,
+			   CUR_RPT,
+			   CUR_RISK,
+			   NEXT_RPT,
+			   STATUS,
+			   APPROVAL_OPINIONS,
+			   CREATE_USER_ID,
+			   CREATE_TIME,
+			   MODIFY_USER_ID,
+			   UPDATE_TIME 
+			   from  PROJECT_RPT_WEEKLY
+			   where PK_PROJ = #{pkProj}
+	</select>
+	<select id="weeklyReportListGistProject" resultMap="rptWeeklyListEntry">
+		select TOP 100 PERCENT
+			   e.PRO_RPT_ID,
+			   e.PK_PROJ,
+			   e.WEEK_BEGIN_DATE,
+			   e.WEEK_END_DATE,
+			   e.MILE_POST,
+			   e.CUR_RPT,
+			   e.CUR_RISK,
+			   e.NEXT_RPT,
+			   e.STATUS,
+			   (select u.USER_NAME FROM USER_INFO u WHERE u.USER_ID = e.CREATE_USER_ID) AS CREATE_USER_NAME,
+			   e.CREATE_TIME,
+			   (select a.USER_NAME FROM USER_INFO a WHERE a.USER_ID = e.APPROVAL_USER_ID) AS APPROVAL_USER_NAME,
+			   e.APPROVAL_OPINIONS,
+			   e.APPROVAL_TIME
+			   from  PROJECT_RPT_WEEKLY e
+			   where PK_PROJ = #{pkProj}
+			   <if test="status != null and status != ''">
+			   		and STATUS = #{status}
+			   </if>
+			   order by WEEK_BEGIN_DATE desc
+	</select>
+	<select id="weeklyReportListManagerAbove" resultMap="rptWeeklyListEntry">
+		select TOP 100 PERCENT
+			   e.PRO_RPT_ID,
+			   e.PK_PROJ,
+			   e.WEEK_BEGIN_DATE,
+			   e.WEEK_END_DATE,
+			   e.MILE_POST,
+			   e.CUR_RPT,
+			   e.CUR_RISK,
+			   e.NEXT_RPT,
+			   e.STATUS,
+			   a.PROJ_NAME,
+			   a.PROJ_CODE,
+			   (select u.USER_NAME FROM USER_INFO u WHERE u.USER_ID = e.CREATE_USER_ID) AS CREATE_USER_NAME,
+			   e.CREATE_TIME,
+			   (select u.USER_NAME FROM USER_INFO u WHERE u.USER_ID = e.APPROVAL_USER_ID) AS APPROVAL_USER_NAME,
+			   e.APPROVAL_OPINIONS,
+			   e.APPROVAL_TIME,
+			   (SELECT max(VERSION) from RPT_WEEKLY_APPROVAL_OPINIONS o where o.PRO_RPT_ID = e.PRO_RPT_ID) as VERSION
+			   from  PROJECT_RPT_WEEKLY e
+			   <if test="loginCode == 'false' ">
+			   		inner JOIN V_DEPT_USER_PROJECT v 
+			   		on e.PK_PROJ = v.PK_PROJ
+					and v.USER_ID = #{userId}
+			   </if>
+			   LEFT JOIN PROJECT a ON e.PK_PROJ = a.PK_PROJ
+			   LEFT JOIN AUTH_DIR d ON a.DEPT_ID=d.DIR_ID
+			   <where>
+			   		e.STATUS = '1'
+					<if test="status == 15 ">
+						and a.STATUS in (02,03,04,05)
+					</if>
+					<if test="status == 20 ">
+						and a.STATUS in (02,03,04,05,06)
+					</if>
+					<if test="status != 15 and status != 20 and  status != null and status != ''">
+						and a.STATUS = #{status}
+					</if>
+					<if test="projName !=null and projName !=''">
+						and	a.PROJ_NAME like '%'+#{projName}+'%'
+					</if>
+					<if test="projCode !=null and projCode !=''">
+						and a.PROJ_CODE like '%'+#{projCode}+'%'
+					</if>
+					<if test="deptName !=null and deptName !=''">
+						and d.DIR_NAME = #{deptName}
+					</if>
+					<if test="deptId !=null and deptId !=''">
+						and d.DIR_ID = #{deptId}
+					</if>
+					<if test="dirSeq !=null and dirSeq !=''">
+		        		and d.DIR_SEQ LIKE '%'+#{dirSeq}+'%'
+					</if>
+				</where>
+			   order by WEEK_BEGIN_DATE desc
+	</select>
+</mapper>

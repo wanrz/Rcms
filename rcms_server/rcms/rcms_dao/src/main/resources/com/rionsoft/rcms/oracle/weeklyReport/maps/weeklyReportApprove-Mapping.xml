@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+  PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" 
+  "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.rionsoft.rcms.dao.weeklyReport.IWeeklyReportApproveMapper">
+	<resultMap type="com.rionsoft.rcms.condition.weeklyReport.RptWeeklyApprovalOpinionsListEntry" id="rptWeeklyApprovalListEntry">
+		<result property="proRptId"        	  column="PRO_RPT_ID"/>
+		<result property="approvalOpinions"   column="APPROVAL_OPINIONS"/>
+		<result property="createUserName" 	  column="APPROVER_NAME" />
+		<result property="createTime" 	      column="CREATE_TIME" />
+		<result property="version"            column="VERSION"/>
+	</resultMap>
+	<insert id="insertRptWeeklyApprove" parameterType="com.rionsoft.rcms.entry.weeklyReport.RptWeeklyApprovalOpinionsEntry">
+		insert into dbo.RPT_WEEKLY_APPROVAL_OPINIONS 
+			(
+        PRO_RPT_ID ,
+        STATUS ,
+        APPROVAL_OPINIONS ,
+        CREATE_TIME ,
+        CREATE_USER_ID ,
+        VERSION
+    		)
+    	VALUES
+	    (
+	        #{proRptId},
+	        #{status},
+	        #{approvalOpinions},
+	        CURRENT_TIMESTAMP,
+	        #{createUserId},
+	        (select ISNULL(max(VERSION),0)+1 as VERSION from RPT_WEEKLY_APPROVAL_OPINIONS b where b.PRO_RPT_ID = #{proRptId})
+	    )
+	</insert>
+	<select id="rptWeeklyApproveByProRptId" resultMap="rptWeeklyApprovalListEntry">
+		select t.PRO_RPT_ID,
+			   t.APPROVAL_OPINIONS,
+			   t.CREATE_TIME as APPROVER_TIME,
+			   (select u.USER_NAME FROM USER_INFO u WHERE u.USER_ID = t.CREATE_USER_ID) AS APPROVER_NAME
+			   from
+			   (select o.PRO_RPT_ID,
+					o.APPROVAL_OPINIONS,
+					o.CREATE_TIME,
+					o.CREATE_USER_ID,
+					row_number() over (partition by PRO_RPT_ID order by VERSION desc) rn 
+					from RPT_WEEKLY_APPROVAL_OPINIONS o) t
+			where rn=1
+			and t.PRO_RPT_ID in 
+			<foreach collection="proRptIdList" item="proRptId" open="(" close=")" separator=",">
+				'${proRptId}'
+			</foreach>
+	</select>
+</mapper>

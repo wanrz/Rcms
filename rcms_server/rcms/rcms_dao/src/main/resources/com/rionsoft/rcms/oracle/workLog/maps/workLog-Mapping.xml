@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper 
+  PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" 
+  "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.rionsoft.rcms.dao.workLog.IWorkLogMapper">
+	<resultMap type="com.rionsoft.rcms.condition.workLog.WorkLogListEntry" id="workLogList">
+		<result property="pkWorkLog"     		column="PK_WORK_LOG"/>
+		<result property="pkTask"     			column="PK_TASK"/>
+		<result property="userId"    			column="USER_ID"/>
+		<result property="workTime"     		column="WORK_TIME"/>
+		<result property="overWorkTime"     	column="OVER_WORK_TIME"/>
+		<result property="overWorkReason"     	column="OVER_WORK_REASON"/>
+		<result property="workDesc"     		column="WORK_DESC"/>
+		<result property="percentage"    		column="PERCENTAGE"/>
+		<result property="isVerfied"    		column="IS_VERFIED"/>
+		<result property="logDate"     			column="LOG_DATE"/>
+		<result property="version"     			column="VERSION"/>
+		<result property="createTime"     		column="CREATE_TIME"/>
+		<result property="updateTime"     		column="UPDATE_TIME"/>
+		<result property="createUserId"     	column="CREATE_USER_ID"/>
+		<result property="modifyUserId"     	column="MODIFY_USER_ID"/>
+		<result property="expEndDate"     	    column="EXP_END_DATE"/>
+		<result property="taskCode"     	    column="TASK_CODE"/>
+		<result property="taskName"     	    column="TASK_NAME"/>
+		<result property="pkProj"     	    	column="PK_PROJ"/>
+		<result property="projName"     	    column="PROJ_NAME"/>
+		<result property="userName"     	    column="USER_NAME"/>
+		<result property="daySum"     	    	column="DAYSUM"/>
+		<result property="weekSum"     	    	column="WEEKSUM"/>
+		<result property="relSum"     	    	column="RELSUM"/>
+		<result property="expStratDate"     	column="EXP_START_DATE"/>
+		<result property="relEndDate"     	    column="REL_END_DATE"/>
+		<result property="status"     	        column="STATUS"/>
+	</resultMap>
+	
+	<resultMap type="java.util.HashMap" id="mapList">
+		<result property="userName"     	    column="USER_NAME"/>
+		<result property="workTime"     		column="WORK_TIME"/>
+		<result property="overWorkTime"     	column="OVER_WORK_TIME"/>
+		<result property="workDesc"     		column="WORK_DESC"/>
+		<result property="percentage"    		column="PERCENTAGE"/>
+		<result property="logDate"     			column="LOG_DATE"/>
+		<result property="taskName"     	    column="TASK_NAME"/>
+		<result property="projName"     	    column="PROJ_NAME"/>
+<!-- 		<result property="version"     			column="VERSION"/> -->
+	</resultMap>
+	
+	<select id="queryWorkByCondition" parameterType="com.rionsoft.rcms.condition.workLog.WorkLogCondition" resultMap="workLogList">
+		with end_date AS(select dateadd(wk, datediff(wk,0,getdate()), 6+#{dateId}) as end_day),
+		     start_date AS(select dateadd(wk, datediff(wk,0,getdate()), #{dateId}) as start_day)
+		select a.PK_TASK,d.PK_WORK_LOG,d.WORK_TIME,d.OVER_WORK_TIME,d.WORK_DESC,d.PERCENTAGE,d.LOG_DATE,e.USER_NAME,d.OVER_WORK_REASON,d.IS_VERFIED
+		from TASK_USER_REF a
+		left join TASK c on a.PK_TASK = c.PK_TASK
+		left join PROJECT b on b.PK_PROJ = c.PK_PROJ
+		left join WORK_LOG d on a.user_id = d.user_id and a.PK_TASK = d.PK_TASK
+		left join user_info e on d.user_id = e.user_id
+		where a.user_id = #{userId}  and 
+		<![CDATA[(d.LOG_DATE is null or (d.LOG_DATE <= (SELECT end_day FROM end_date) 
+		 and d.LOG_DATE >= (SELECT start_day FROM start_date))) ]]> 
+		<![CDATA[ and c.EXP_START_DATE <=(SELECT end_day FROM end_date) ]]>
+		order by d.LOG_DATE
+	</select>
+	
+	<select id="queryWorkLogExprot" resultMap="mapList">
+		select distinct a.WORK_TIME,a.OVER_WORK_TIME,a.WORK_DESC,a.PERCENTAGE,a.LOG_DATE,b.USER_NAME,
+			   c.TASK_NAME,d.PROJ_NAME
+		from WORK_LOG a
+		left join USER_INFO b on a.USER_ID = b.USER_ID
+		left join TASK c on a.PK_TASK = c.PK_TASK
+		left join PROJECT d on c.PK_PROJ = d.PK_PROJ
+		where a.PK_WORK_LOG in 
+		<foreach collection="pkWorkLogList" item="pkWorkLog" open="(" close=")" separator=",">
+			'${pkWorkLog}'
+		</foreach>
+		order by LOG_DATE
+	</select>
+	
+	<select id="queryWorkLogByPkTask" resultMap="workLogList">
+		select distinct a.PK_TASK,b.TASK_CODE from WORK_LOG a
+		left join TASK b on a.PK_TASK = b.PK_TASK
+		where a.PK_TASK in
+		<foreach collection="pkList" item="pkTask" open="(" close=")" separator=",">
+			'${pkTask}'
+		</foreach>
+	</select>
+	
+	<select id="queryDaySum" resultMap="workLogList">
+		with end_date AS(select dateadd(wk, datediff(wk,0,getdate()), 6+#{dateId}) as end_day),
+		     start_date AS(select dateadd(wk, datediff(wk,0,getdate()), #{dateId}) as start_day)
+		select 
+			(select datediff(day,b.EXP_START_DATE,GETDATE())) AS daysum,
+	    	(select datediff(day,(SELECT start_day FROM start_date),GETDATE())) AS weeksum,
+	    	(select datediff(day,a.REL_END_DATE,(SELECT start_day FROM start_date))) AS relsum,
+			a.PK_TASK,c.proj_name,b.TASK_NAME,b.TASK_CODE,b.EXP_START_DATE,b.EXP_END_DATE,b.REL_END_DATE,b.STATUS,a.PERCENTAGE
+			from TASK_USER_REF a
+			left join TASK b 
+			on a.PK_TASK = b.PK_TASK and b.STATUS != '3'
+			left join PROJECT c 
+			on b.PK_PROJ = c.PK_PROJ
+			where a.user_id = #{userId}
+			and c.STATUS != '06'
+			<![CDATA[and b.EXP_START_DATE <= (SELECT end_day FROM end_date)
+            AND ((a.REL_END_DATE IS NULL OR a.REL_END_DATE >=(SELECT start_day FROM start_date))
+                  OR (b.STATUS = '5' AND b.REL_END_DATE >=(SELECT start_day FROM start_date)))]]>
+	</select>
+	<delete id="deleteList">
+		delete from WORK_LOG where PK_WORK_LOG in
+		<foreach collection="entryList" item="entry" open="(" close=")" separator=",">
+			#{entry.pkWorkLog}
+		</foreach>
+	</delete>
+	<select id="selectWeekWorkInfo" resultMap="workLogList">
+	with start_date AS(select dateadd(wk, datediff(wk,0,getdate()),-1+#{dateId}) as start_day),
+         end_date AS(select dateadd(wk, datediff(wk,0,getdate()),+7+#{dateId}) as end_day)
+	SELECT   a.PK_TASK
+	        ,a.PERCENTAGE
+	        ,b.STATUS
+	        ,b.TASK_CODE
+	        <![CDATA[,(select MIN(PERCENTAGE) FROM dbo.WORK_LOG WHERE USER_ID = a.USER_ID and PK_TASK = a.PK_TASK and LOG_DATE > (SELECT end_day FROM end_date)) AS RELSUM
+	        ,(select MIN(LOG_DATE) FROM dbo.WORK_LOG WHERE USER_ID = a.USER_ID and PK_TASK = a.PK_TASK and LOG_DATE > (SELECT end_day FROM end_date)) AS EXP_END_DATE
+	        ,(select MAX(PERCENTAGE) FROM dbo.WORK_LOG WHERE USER_ID = a.USER_ID and PK_TASK = a.PK_TASK and LOG_DATE < (SELECT start_day FROM start_date)) AS DAYSUM
+	        ,(select MAX(LOG_DATE) FROM dbo.WORK_LOG WHERE USER_ID = a.USER_ID and PK_TASK = a.PK_TASK and LOG_DATE < (SELECT start_day FROM start_date)) AS EXP_START_DATE
+	        from dbo.TASK_USER_REF a
+	        LEFT JOIN dbo.TASK b ON a.PK_TASK = b.PK_TASK 
+	        WHERE USER_ID = #{userId}  
+		AND b.EXP_START_DATE < (SELECT end_day FROM end_date)
+		AND (a.REL_END_DATE IS NULL 
+			OR a.REL_END_DATE >=(SELECT start_day FROM start_date)
+			OR (b.STATUS = '5' AND b.REL_END_DATE >=(SELECT start_day FROM start_date)))]]>
+	</select>
+	<select id="selectMonthWorkInfo" resultMap="workLogList">
+	with start_date as (SELECT CONVERT(CHAR(10),DATEADD(dd,-DAY(GETDATE())+1,GETDATE()),111) as start_day),
+         end_date AS(SELECT CONVERT(CHAR(10),DATEADD(m,1,DATEADD(dd,-DAY(GETDATE())+1,GETDATE())),111) as end_day)
+	SELECT   a.PK_TASK
+	        ,a.PERCENTAGE
+	        ,b.STATUS
+	        ,b.TASK_CODE
+	        <![CDATA[,(select MAX(PERCENTAGE) FROM dbo.WORK_LOG WHERE USER_ID = a.USER_ID and PK_TASK = a.PK_TASK and LOG_DATE < (SELECT start_day FROM start_date)) AS DAYSUM
+	        ,(select MAX(LOG_DATE) FROM dbo.WORK_LOG WHERE USER_ID = a.USER_ID and PK_TASK = a.PK_TASK and LOG_DATE < (SELECT start_day FROM start_date)) AS EXP_START_DATE
+	        from dbo.TASK_USER_REF a
+	        LEFT JOIN dbo.TASK b ON a.PK_TASK = b.PK_TASK 
+	        WHERE USER_ID = #{userId}  
+		AND b.EXP_START_DATE < (SELECT end_day FROM end_date)
+		AND (a.REL_END_DATE IS NULL 
+			OR a.REL_END_DATE >=(SELECT start_day FROM start_date)
+			OR (b.STATUS = '5' AND b.REL_END_DATE >=(SELECT start_day FROM start_date)))]]>
+	</select>
+	<select id="queryMonthByCondition" parameterType="com.rionsoft.rcms.condition.workLog.WorkLogCondition" resultMap="workLogList">
+		with start_date as (SELECT CONVERT(CHAR(10),DATEADD(dd,-DAY(GETDATE())+1,GETDATE()),111) as start_day),
+			 end_date as (select dateadd(dd,-datepart(dd,getdate()) ,dateadd(mm,1,getdate())) as end_day)
+		select a.PK_TASK,d.PK_WORK_LOG,d.WORK_TIME,d.OVER_WORK_TIME,d.WORK_DESC,d.PERCENTAGE,d.LOG_DATE,e.USER_NAME,d.OVER_WORK_REASON,d.IS_VERFIED
+		from TASK_USER_REF a
+		left join TASK c on a.PK_TASK = c.PK_TASK
+		left join PROJECT b on b.PK_PROJ = c.PK_PROJ
+		left join WORK_LOG d on a.user_id = d.user_id and a.PK_TASK = d.PK_TASK
+		left join user_info e on d.user_id = e.user_id
+		where a.user_id = #{userId}  and 
+		<![CDATA[(d.LOG_DATE is null or (d.LOG_DATE <= (SELECT end_day FROM end_date) 
+		 and d.LOG_DATE >= (SELECT start_day FROM start_date))) ]]> 
+		<![CDATA[ and c.EXP_START_DATE <=(SELECT end_day FROM end_date) ]]>
+		order by d.LOG_DATE
+	</select>
+	<select id="queryMonthDaySum" resultMap="workLogList">
+		with start_date as (SELECT CONVERT(CHAR(10),DATEADD(dd,-DAY(GETDATE())+1,GETDATE()),111) as start_day),
+			 end_date as (select dateadd(dd,-datepart(dd,getdate()) ,dateadd(mm,1,getdate())) as end_day)
+		select 
+			 (select datediff(day,b.EXP_START_DATE,GETDATE())) AS daysum,
+	    	 (select datediff(day,(SELECT start_day FROM start_date),GETDATE())) AS weeksum,
+	    	 (select datediff(day,a.REL_END_DATE,(SELECT start_day FROM start_date))) AS relsum,
+			 a.PK_TASK,c.proj_name,b.TASK_NAME,b.TASK_CODE,b.EXP_START_DATE,b.EXP_END_DATE,b.REL_END_DATE,b.STATUS,a.PERCENTAGE
+			 from TASK_USER_REF a
+			 left join TASK b 
+			 on a.PK_TASK = b.PK_TASK and b.STATUS != '3'
+			 left join PROJECT c 
+			 on b.PK_PROJ = c.PK_PROJ
+			 where a.user_id = #{userId} 
+			 and c.STATUS != '06'
+			 <![CDATA[and ((GETDATE() >= (SELECT start_day FROM start_date)
+			 and b.EXP_START_DATE <(SELECT end_day FROM end_date)
+			 and b.EXP_END_DATE >=(SELECT start_day FROM start_date))
+			 or (b.PERCENTAGE<100 and b.EXP_END_DATE<(SELECT end_day FROM end_date))
+			 or a.REL_END_DATE >=(SELECT start_day FROM start_date))]]>
+	</select>
+	<select id="queryWorkLogViewList" resultMap="workLogList">
+		select TOP 100 PERCENT
+        w.PK_WORK_LOG,
+        w.LOG_DATE,      
+        t.TASK_NAME,
+        USER_NAME,
+        u.USER_ID,
+        PROJ_NAME,
+        p.PK_PROJ,
+        w.WORK_TIME,
+        w.OVER_WORK_TIME,
+        w.OVER_WORK_REASON,
+        w.PERCENTAGE,
+        w.WORK_DESC
+        from WORK_LOG w 
+        INNER JOIN  TASK t ON w.PK_TASK = t.PK_TASK
+        INNER JOIN PROJECT p ON t.PK_PROJ = p.PK_PROJ
+        LEFT JOIN USER_INFO u ON u.USER_ID=w.USER_ID
+        LEFT JOIN AUTH_DIR d ON u.DIR_ID=d.DIR_ID
+        <if test="loginCode == 'false' ">
+			inner JOIN V_USER_PROJECT_ALL e 
+			on a.PK_PROJ = e.PK_PROJ
+			and e.USER_ID = #{operatorId}
+		</if>
+        <where>
+			<if test="projName !=null and projName !=''">
+				and	p.PROJ_NAME like '%'+#{projName}+'%'
+			</if>
+			<if test="deptName !=null and deptName !=''">
+				and d.DIR_NAME = #{deptName}
+			</if>
+			<if test="deptId !=null and deptId !=''">
+				and d.DIR_ID = #{deptId}
+			</if>
+			<if test="dirSeq !=null and dirSeq !=''">
+        		and d.DIR_SEQ LIKE '%'+#{dirSeq}+'%'
+			</if>
+			<if test="userName != null and userName != ''">
+				and u.USER_NAME LIKE '%'+#{userName}+'%'
+			</if>
+        	<if test="beginDate != null and beginDate != '' ">
+        		and w.LOG_DATE >= ${beginDate}
+        	</if>
+        	<if test="endDate != null and endDate != '' ">
+        		<![CDATA[and w.LOG_DATE <= ${endDate}]]>
+        	</if>
+		</where>
+		order by w.LOG_DATE desc,TASK_NAME
+	</select>
+	<select id="workLogViewVisual" resultMap="workLogList">
+	with end_date AS(select dateadd(wk, datediff(wk,0,getdate()), 6+#{dateId}) as end_day),
+		     start_date AS(select dateadd(wk, datediff(wk,0,getdate()), #{dateId}) as start_day)
+		select TOP 100 PERCENT
+        w.PK_WORK_LOG,
+        w.LOG_DATE,      
+        t.TASK_NAME,
+        w.USER_ID,
+        PROJ_NAME,
+        p.PK_PROJ,
+        w.WORK_TIME,
+        w.OVER_WORK_TIME,
+        w.OVER_WORK_REASON,
+        w.PERCENTAGE,
+        w.WORK_DESC
+        from WORK_LOG w 
+        INNER JOIN  TASK t ON w.PK_TASK = t.PK_TASK
+        INNER JOIN PROJECT p ON t.PK_PROJ = p.PK_PROJ
+        where p.PK_PROJ = #{pkTask} and w.USER_ID = #{userId}
+        <![CDATA[and w.LOG_DATE <= (SELECT end_day FROM end_date)
+        and w.LOG_DATE >= (SELECT start_day FROM start_date)]]>
+		order by w.LOG_DATE
+	</select>
+	<select id="selectMaxLogDateCamp" resultType="java.sql.Date">
+		select MAX(a.LOG_DATE) from dbo.WORK_LOG a 
+			WHERE a.PK_TASK =  #{pkTask} and a.PERCENTAGE = 100
+	</select>
+</mapper>

@@ -1,0 +1,14 @@
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans classpath:xsd/spring-beans-4.0.xsd
+						http://www.springframework.org/schema/util classpath:xsd/spring-util-4.0.xsd">
+	
+	<import resource="classpath*:/config/spring-biz.xml"/>
+	<import resource="classpath*:/config/spring-common.xml"/>
+	<import resource="classpath*:/config/spring-session.xml"/>
+	<import resource="classpath*:/config/rcms-auth.xml"/>
+	<import resource="classpath*:/config/spring-activiti.xml"/>
+<!-- 	<import resource="classpath*:/config/spring-task.xml"/> -->
+<!-- 	<import resource="classpath*:/config/roep-redis.xml"/> -->
+</beans>

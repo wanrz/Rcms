@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper 
+  PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" 
+  "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.rionsoft.rcms.dao.workLoadAccount.IWorkLoadAccountMapper">
+	<resultMap type="com.rionsoft.rcms.condition.workLoadAccount.WorkLoadListEntry" id="workLoadMap">
+		<result property="yearMonth"     		column="YEAR_MONTH"/>
+		<result property="projCode"     			column="PROJ_CODE"/>
+		<result property="projName"    			column="PROJ_NAME"/>
+		<result property="userName"     		column="USER_NAME"/>
+		<result property="workTime"     	column="WORK_TIME"/>
+		<result property="overWorkTime"     		column="OVER_WORK_TIME"/>
+		<result property="count"    		column="COUNT"/>
+		<result property="pkProj"     			column="PK_PROJ"/>
+		
+	</resultMap>
+	
+	<resultMap type="java.util.HashMap" id="mapList">
+		<result property="yearMonth"     		column="YEAR_MONTH"/>
+		<result property="projCode"     			column="PROJ_CODE"/>
+		<result property="projName"    			column="PROJ_NAME"/>
+		<result property="userName"     		column="USER_NAME"/>
+		<result property="workTime"     	column="WORK_TIME"/>
+		<result property="overWorkTime"     		column="OVER_WORK_TIME"/>
+		<result property="count"    		column="COUNT"/>
+		<result property="pkProj"     			column="PK_PROJ"/>
+	</resultMap>
+	
+	<resultMap type="com.rionsoft.rcms.condition.workLoadAccount.WorkLoadAccountListEntry" id="workLoadAccountMap">
+		<result property="pkProj"     		column="PK_PROJ"/>
+		<result property="yearMonth"     	column="YEAR_MONTH"/>
+	</resultMap>
+	<select id="queryWorkLoadByDataCode" resultMap="workLoadMap"  parameterType="com.rionsoft.rcms.condition.workLoadAccount.WorkLoadCondition">
+		     SELECT TOP 100 PERCENT
+            	CONVERT(varchar(6),a.LOG_DATE,112) as YEAR_MONTH,
+				d.PK_PROJ,
+				d.PROJ_NAME,
+				d.PROJ_CODE,
+				b.USER_NAME,
+				sum(a.WORK_TIME) as WORK_TIME,
+				sum(a.OVER_WORK_TIME) as OVER_WORK_TIME,
+				(sum(a.WORK_TIME)+sum(a.OVER_WORK_TIME)) as COUNT
+			FROM WORK_LOG a
+			LEFT JOIN USER_INFO b ON b.USER_ID=a.USER_ID
+			LEFT JOIN TASK c ON c.PK_TASK = a.PK_TASK
+			LEFT JOIN PROJECT d ON d.PK_PROJ = c.PK_PROJ
+			JOIN AUTH_DIR f ON d.DEPT_ID=f.DIR_ID
+			<if test="adminLoginCode != loginCode">
+				join V_USER_PROJECT e on d.PK_PROJ = e.PK_PROJ
+			</if> 
+			<where>
+			<if test="projName !=null and projName !=''">
+				and d.PROJ_NAME like '%'+#{projName}+'%'
+			</if> 
+			<if test="projCode !=null and projCode !=''">
+				and d.PROJ_CODE like '%'+#{projCode}+'%'
+			</if>
+			<if test="projStatus !=null and projStatus !=''">
+				and d.STATUS =#{projStatus}
+			</if>
+			<if test="adminLoginCode  != loginCode">
+				and e.USER_ID = #{userId}
+			</if>
+			<if test="deptId !=null and deptId !=''">
+				and f.DIR_ID = #{deptId}
+			</if>
+			<if test="dirSeq !=null and dirSeq !=''">
+        		and f.DIR_SEQ LIKE '%'+#{dirSeq}+'%'
+			</if>
+			</where>
+			GROUP BY CONVERT(varchar(6),a.LOG_DATE,112),d.PK_PROJ,d.PROJ_NAME,d.PROJ_CODE,b.USER_NAME
+			
+		UNION 
+		
+			 SELECT TOP 100 PERCENT
+            	CONVERT(varchar(6),a.LOG_DATE,112) as YEAR_MONTH,
+				d.PK_PROJ,
+				d.PROJ_NAME,
+				d.PROJ_CODE,
+				b.USER_NAME ,
+				sum(a.WORK_TIME) as WORK_TIME,
+				sum(a.OVER_WORK_TIME) as OVER_WORK_TIME,
+				(sum(a.WORK_TIME)+sum(a.OVER_WORK_TIME)) as COUNT
+			FROM WORK_LOG a
+			LEFT JOIN USER_INFO b ON b.USER_ID=a.USER_ID
+			LEFT JOIN TASK c ON c.PK_TASK = a.PK_TASK
+			LEFT JOIN PROJECT d ON d.PK_PROJ = c.PK_PROJ
+			
+			WHERE b.USER_ID = #{userId}
+			
+			GROUP BY CONVERT(varchar(6),a.LOG_DATE,112),d.PK_PROJ,d.PROJ_NAME,d.PROJ_CODE,b.USER_NAME
+			order by d.PROJ_CODE 
+	</select>
+	
+	<select id="queryWorkAccountExprot" resultMap="mapList"  parameterType="com.rionsoft.rcms.condition.workLoadAccount.WorkLoadCondition">
+		SELECT 
+            	CONVERT(varchar(30),a.CREATE_TIME,112) as YEAR_MONTH,
+				d.PK_PROJ,
+				d.PROJ_NAME,
+				d.PROJ_CODE,
+				b.USER_NAME ,
+				sum(a.WORK_TIME) as WORK_TIME,
+				sum(a.OVER_WORK_TIME) as OVER_WORK_TIME,
+				(sum(a.WORK_TIME)+sum(a.OVER_WORK_TIME)) as COUNT
+			FROM WORK_LOG a
+			LEFT JOIN USER_INFO b ON b.USER_ID=a.USER_ID
+			LEFT JOIN TASK c ON c.PK_TASK = a.PK_TASK
+			LEFT JOIN PROJECT d ON d.PK_PROJ = c.PK_PROJ
+			<if test="adminLoginCode != loginCode">
+				join V_USER_PROJECT e on d.PK_PROJ = e.PK_PROJ
+			</if> 
+			<where>
+				<if test="projName !=null and projName !=''">
+					and d.PROJ_NAME like '%'+#{projName}+'%'
+				</if> 
+				<if test="projCode !=null and projCode !=''">
+					and d.PROJ_CODE like '%'+#{projCode}+'%'
+				</if>  
+				<if test="adminLoginCode  != loginCode">
+					and e.USER_ID = #{userId}
+				</if>
+			</where>
+			GROUP BY CONVERT(varchar(30),a.CREATE_TIME,112),d.PK_PROJ,d.PROJ_NAME,d.PROJ_CODE,b.USER_NAME
+	
+		UNION 
+		
+			 SELECT 
+            	CONVERT(varchar(30),a.CREATE_TIME,112) as YEAR_MONTH,
+				d.PK_PROJ,
+				d.PROJ_NAME,
+				d.PROJ_CODE,
+				b.USER_NAME ,
+				sum(a.WORK_TIME) as WORK_TIME,
+				sum(a.OVER_WORK_TIME) as OVER_WORK_TIME,
+				(sum(a.WORK_TIME)+sum(a.OVER_WORK_TIME)) as COUNT
+			FROM WORK_LOG a
+			LEFT JOIN USER_INFO b ON b.USER_ID=a.USER_ID
+			LEFT JOIN TASK c ON c.PK_TASK = a.PK_TASK
+			LEFT JOIN PROJECT d ON d.PK_PROJ = c.PK_PROJ
+			
+			WHERE b.USER_ID = #{userId}
+			
+			GROUP BY CONVERT(varchar(30),a.CREATE_TIME,112),d.PK_PROJ,d.PROJ_NAME,d.PROJ_CODE,b.USER_NAME
+	
+	</select>
+</mapper>

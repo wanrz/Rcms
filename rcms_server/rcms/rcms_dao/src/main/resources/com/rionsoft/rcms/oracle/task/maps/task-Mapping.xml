@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper 
+  PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" 
+  "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.rionsoft.rcms.dao.task.ITaskMapper">
+	<resultMap type="com.rionsoft.rcms.condition.task.TaskListEntry" id="taskEntry">
+		<result property="pkTask"        	  column="PK_TASK"/>
+		<result property="pkProj"       	  column="PK_PROJ"/>
+		<result property="taskCode"     	  column="TASK_CODE"/>
+		<result property="taskName"     	  column="TASK_NAME"/>
+		<result property="expStartDate"   	  column="EXP_START_DATE"/>
+		<result property="expEndDate" 		  column="EXP_END_DATE"/>
+		<result property="relEndDate" 		  column="REL_END_DATE"/>
+		<result property="percentage" 		  column="PERCENTAGE"/>
+		<result property="workload" 		  column="WORKLOAD"/>
+		<result property="status" 		 	  column="STATUS"/>
+		<result property="createUserId" 	  column="CREATE_USER_ID" />
+		<result property="createTime"  	  	  column="CREATE_TIME"/>
+		<result property="modifyUserId" 	  column="MODIFY_USER_ID" />
+		<result property="updateTime" 		  column="UPDATE_TIME" />
+		<result property="userCount" 		  column="USER_COUNT" />
+		<result property="projName" 		  column="PROJ_NAME" />
+		<result property="pmName" 		      column="PM_NAME" />
+		<result property="taskJoiner" 		  column="TASK_JOINER" />
+	</resultMap>
+	<resultMap type="com.rionsoft.rcms.entry.task.TaskEntry" id="entryTask">
+		<result property="pkTask"        	  column="PK_TASK"/>
+		<result property="pkProj"       	  column="PK_PROJ"/>
+		<result property="taskCode"     	  column="TASK_CODE"/>
+		<result property="taskName"     	  column="TASK_NAME"/>
+		<result property="expStartDate"   	  column="EXP_START_DATE"/>
+		<result property="expEndDate" 		  column="EXP_END_DATE"/>
+		<result property="relEndDate" 		  column="REL_END_DATE"/>
+		<result property="percentage" 		  column="PERCENTAGE"/>
+		<result property="workload" 		  column="WORKLOAD"/>
+		<result property="status" 		 	  column="STATUS"/>
+		<result property="createUserId" 	  column="CREATE_USER_ID" />
+		<result property="createTime"  	  	  column="CREATE_TIME"/>
+		<result property="modifyUserId" 	  column="MODIFY_USER_ID" />
+		<result property="updateTime" 		  column="UPDATE_TIME" />
+	</resultMap>
+	<resultMap type="com.rionsoft.rcms.condition.task.TaskUserRefListEntry" id="userRefEntry">
+		<result property="pkTask" 		  	  column="PK_TASK" />
+		<result property="userId" 		  	  column="USER_ID" />
+		<result property="userName" 		  column="USER_NAME" />
+		<result property="percentage" 		  column="PERCENTAGE" />
+		<result property="expStartDate"   	  column="EXP_START_DATE"/>
+		<result property="expEndDate" 		  column="EXP_END_DATE"/>
+		<result property="dirName" 		 	  column="DIR_NAME" />
+		<result property="relEndDate" 		  column="REL_END_DATE"/>
+		<result property="requireWorkload" 	  column="REQUIRE_WORKLOAD" />
+	</resultMap>
+	<sql id="query_user_data_type">
+    	<if test="userId !=null">
+            
+        </if>  
+ 	</sql> 
+ 	<select id="queryTaskByDataCode" parameterType="com.rionsoft.rcms.condition.task.TaskCondition" resultMap="taskEntry">
+ 		SELECT TOP 100 PERCENT
+		    PK_TASK,
+			PK_PROJ,
+			TASK_CODE,
+			TASK_NAME,
+			EXP_START_DATE,
+			EXP_END_DATE,
+			REL_END_DATE,
+			PERCENTAGE,
+			WORKLOAD,
+			STATUS,
+			CREATE_USER_ID,
+			CREATE_TIME,
+			MODIFY_USER_ID,
+			UPDATE_TIME,
+			PROJ_NAME,
+			PM_NAME,
+			USER_COUNT,
+			TASK_JOINER
+FROM			
+	(SELECT 	a.PK_TASK,
+				a.PK_PROJ,
+				a.TASK_CODE,
+				a.TASK_NAME,
+				a.EXP_START_DATE,
+				a.EXP_END_DATE,
+				a.REL_END_DATE,
+				a.PERCENTAGE,
+			    a.WORKLOAD,
+			    a.STATUS,
+			    a.CREATE_USER_ID,
+			    a.CREATE_TIME,
+			    a.MODIFY_USER_ID,
+			    a.UPDATE_TIME,
+			    b.PROJ_NAME,
+			    c.USER_NAME as PM_NAME,
+			   	(SELECT COUNT(2)  
+			   		FROM TASK_USER_REF k 
+			   		LEFT JOIN USER_INFO t ON t.USER_ID = k.USER_ID 
+			   		WHERE a.PK_TASK=k.PK_TASK) as USER_COUNT,
+			   (SELECT  
+			   userName=stuff((SELECT distinct ',' + USER_NAME
+        							FROM (SELECT PK_TASK,USER_NAME FROM TASK_USER_REF f 
+									LEFT JOIN USER_INFO g ON f.USER_ID = g.USER_ID) j
+         							WHERE a.PK_TASK = j.PK_TASK	 
+									GROUP BY USER_NAME
+        							FOR xml path('')) , 1, 1, '')) AS TASK_JOINER
+		FROM TASK a
+		JOIN PROJECT b on a.PK_PROJ = b.PK_PROJ
+		JOIN USER_INFO c on c.USER_ID=b.PM_ID
+		JOIN AUTH_DIR d on d.DIR_ID=c.DIR_ID
+		<if test="adminLoginCode != loginCode">
+			join V_USER_PROJECT e on b.PK_PROJ = e.PK_PROJ
+		</if>
+		<where>
+			and b.STATUS not in ('01','06')
+			<if test="taskCode != null and taskCode != ''">
+				and a.TASK_CODE like '%' + #{taskCode} + '%'
+			</if>
+			<if test="taskName != null and taskName != ''">
+				and a.TASK_NAME like '%' + #{taskName} + '%'
+			</if>
+			<if test="projName != null">
+				and b.PROJ_NAME like '%' + #{projName} + '%'
+			</if>
+			<if test="status != null and status !=''">
+				and a.STATUS = #{status}
+			</if>
+			<if test="pkProj != null and pkProj !=''">
+				and a.PK_PROJ = #{pkProj}
+			</if>
+			<!-- <if test="taskJoiner != null and taskJoiner !=''">
+				and a.PK_PROJ = #{pkProj}
+			</if> -->
+			<if test="expEndDate != null">
+				<![CDATA[
+					and a.EXP_END_DATE >= #{expEndDate}
+				]]>
+			</if>
+			<if test="dirId != null">
+				and b.DEPT_ID = #{dirId}
+			</if>
+			<if test="pkTaskList!=null and  pkTaskList.size>0">
+                  		and a.PK_TASK in 
+                  		<foreach collection="pkTaskList" item="pk" open="(" close=")" separator=",">
+                  			${pk}
+                  		</foreach>
+            </if>
+            <if test="adminLoginCode  != loginCode">
+				and e.USER_ID = #{userId}
+			</if>
+		</where>	
+		) m
+		<where>
+			<if test="taskJoiner != null and taskJoiner != ''">
+				and m.TASK_JOINER like '%'+#{taskJoiner}+'%'
+			</if>
+		</where> 
+		order by m.CREATE_TIME  desc
+ 	</select>
+	<select id="queryByCondition" parameterType="com.rionsoft.rcms.condition.task.TaskCondition" resultMap="taskEntry">
+		SELECT  
+		    PK_TASK,
+			PK_PROJ,
+			TASK_CODE,
+			TASK_NAME,
+			EXP_START_DATE,
+			EXP_END_DATE,
+			REL_END_DATE,
+			PERCENTAGE,
+			WORKLOAD,
+			STATUS,
+			CREATE_USER_ID,
+			CREATE_TIME,
+			MODIFY_USER_ID,
+			UPDATE_TIME,
+			PROJ_NAME,
+			PM_NAME,
+			USER_COUNT,
+			TASK_JOINER
+FROM			
+	(SELECT 	a.PK_TASK,
+				a.PK_PROJ,
+				a.TASK_CODE,
+				a.TASK_NAME,
+				a.EXP_START_DATE,
+				a.EXP_END_DATE,
+				a.REL_END_DATE,
+				a.PERCENTAGE,
+			    a.WORKLOAD,
+			    a.STATUS,
+			    a.CREATE_USER_ID,
+			    a.CREATE_TIME,
+			    a.MODIFY_USER_ID,
+			    a.UPDATE_TIME,
+			    b.PROJ_NAME,
+			    c.USER_NAME as PM_NAME,
+			   	(SELECT COUNT(2)  
+			   		FROM TASK_USER_REF k 
+			   		LEFT JOIN USER_INFO t ON t.USER_ID = k.USER_ID 
+			   		WHERE a.PK_TASK=k.PK_TASK) as USER_COUNT,
+			   (SELECT  
+			   userName=stuff((SELECT distinct ',' + USER_NAME
+        							FROM (SELECT PK_TASK,USER_NAME FROM TASK_USER_REF f 
+									LEFT JOIN USER_INFO g ON f.USER_ID = g.USER_ID) j
+         							WHERE a.PK_TASK = j.PK_TASK	 
+									GROUP BY USER_NAME
+        							FOR xml path('')) , 1, 1, '')) AS TASK_JOINER
+		FROM TASK a
+		JOIN PROJECT b on a.PK_PROJ = b.PK_PROJ
+		JOIN USER_INFO c on c.USER_ID=b.PM_ID
+		
+		<where>
+			<if test="taskCode != null and taskCode != ''">
+				and a.TASK_CODE like '%' + #{taskCode} + '%'
+			</if>
+			<if test="taskName != null and taskName != ''">
+				and a.TASK_NAME like '%' + #{taskName} + '%'
+			</if>
+			<if test="status != null and status !=''">
+				and a.STATUS = #{status}
+			</if>
+			<if test="pkProj != null and pkProj !=''">
+				and a.PK_PROJ = #{pkProj}
+			</if>
+			<!-- <if test="taskJoiner != null and taskJoiner !=''">
+				and a.PK_PROJ = #{pkProj}
+			</if> -->
+			<if test="expEndDate != null">
+				<![CDATA[
+					and a.EXP_END_DATE >= #{expEndDate}
+				]]>
+			</if>
+			<if test="dirId != null">
+				and b.DEPT_ID = #{dirId}
+			</if>
+			<if test="pkTaskList!=null and  pkTaskList.size>0">
+                  		and a.PK_TASK in 
+                  		<foreach collection="pkTaskList" item="pk" open="(" close=")" separator=",">
+                  			${pk}
+                  		</foreach>
+            </if>
+			AND (#{loginCode}=#{adminLoginCode}
+			OR EXISTS(SELECT DATA_CODE FROM(SELECT DATA_CODE FROM V_USER_ROLE_DATA WHERE USER_ID=#{userId})X WHERE DATA_CODE='01')
+			OR (EXISTS(SELECT DATA_CODE FROM(SELECT DATA_CODE FROM V_USER_ROLE_DATA WHERE USER_ID=#{userId})Y WHERE DATA_CODE='02') and b.PK_PROJ  IN (SELECT PK_PROJ FROM V_USER_DEPT_PROJECT WHERE USER_ID=#{userId}))
+			OR (EXISTS(SELECT DATA_CODE FROM(SELECT DATA_CODE FROM V_USER_ROLE_DATA WHERE USER_ID=#{userId})Z WHERE DATA_CODE='03') and b.PM_ID  =#{userId}))
+		</where>	
+		) m
+		<where>
+			<if test="taskJoiner != null and taskJoiner != ''">
+				and m.TASK_JOINER like '%'+#{taskJoiner}+'%'
+			</if>
+		</where>   
+	</select>
+	<select id="queryRefByCondition" resultMap="userRefEntry" parameterType="com.rionsoft.rcms.condition.task.TaskUserRefCondition">
+		select a.PK_TASK,a.USER_ID,a.PERCENTAGE,a.REQUIRE_WORKLOAD,b.EXP_START_DATE,b.EXP_END_DATE,c.USER_NAME,d.DIR_NAME
+		from TASK_USER_REF a
+		left join TASK b on a.PK_TASK = b.PK_TASK
+		left join USER_INFO c on a.USER_ID = c.USER_ID
+		left join AUTH_DIR d on c.DIR_ID = d.DIR_ID
+		where a.PK_TASK = #{pkTask}
+	</select>
+	
+	<delete id="deleteUser">
+		delete from TASK_USER_REF
+		where PK_TASK = #{pkTask} and USER_ID in
+			<foreach collection="userList" item="userId" open="(" close=")" separator=",">
+				'${userId}'
+			</foreach>
+	</delete>
+	
+	<select id="queryUserInfoByCondition"  resultMap="userRefEntry" parameterType="com.rionsoft.rcms.condition.task.TaskUserRefCondition">
+		select TOP 100 PERCENT a.user_id,b.user_name,c.dir_name from PROJECT_RECOURCE_REF a
+		left join user_info b on a.user_id = b.user_id
+		left join auth_dir c on b.dir_id = c.dir_id
+		<where>
+			and not exists (select 1 from TASK_USER_REF d where  d.user_id = a.user_id and pk_task = #{pkTask})
+			and	a.pk_proj = #{pkProj} and b.USER_STATUS = 1
+			<if test="userName !=null and userName !=''">
+				AND b.USER_NAME like '%'+#{userName}+'%'
+			</if>
+			<if test="deptName !=null and deptName !=''">
+				AND c.DIR_NAME like '%'+#{deptName}+'%'
+			</if>
+     	</where>
+     	order by a.user_id
+	</select>
+	
+	<resultMap type="com.rionsoft.rcms.entry.project.ProjectEntry" id="proEntry">
+		<result property="pkProj"        	  column="PK_PROJ"/>
+		<result property="projName"        	  column="PROJ_NAME"/>
+	</resultMap>
+	
+	<select id="queryProjectByName" resultMap="proEntry">
+		select PK_PROJ,PROJ_NAME from PROJECT where PROJ_NAME in 
+		<foreach collection="proNameList" item="projName" open="(" close=")" separator=",">
+			'${projName}'
+		</foreach>
+	</select>
+	
+	<select id="checkTaskCode" resultType="String">
+		select [TASK_CODE]=stuff((select ','+[TASK_CODE] from TASK t where t.PK_TASK=a.PK_TASK for xml path('')), 1, 1, '') 
+			from TASK a 
+			where task_code in
+			<foreach collection="taskCodeList" item="taskCode" open="(" close=")" separator=",">
+				'${taskCode}'
+			</foreach>
+	</select>
+	
+	<resultMap type="com.rionsoft.rcms.entry.project.ProjectEntry" id="projectList">
+		<result property="pkProj" column="PK_PROJ" />
+		<result property="projName" column="PROJ_NAME" />
+		<result property="expStartDate"   	  column="EXP_START_DATE"/>
+	</resultMap>
+	
+	<select id="projectQuery" resultMap="projectList">
+		SELECT PK_PROJ,PROJ_NAME,EXP_START_DATE FROM PROJECT
+		<where>
+			STATUS = '03'
+			<if test="userId != 1">
+				and pm_id = #{userId}
+				or PK_PROJ in 
+				(select PK_PROJ from PROJECT_RECOURCE_REF 
+				 where USER_ID = #{userId} and CHARGE_PROJ = 2)
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryTaskByUserId" resultMap="taskEntry">
+		select a.PK_TASK,b.TASK_NAME from TASK_USER_REF a
+		left join TASK b on a.PK_TASK = b.PK_TASK
+		where a.USER_ID = #{userId} and (b.STATUS = '1' or b.STATUS = '2' or b.STATUS = '5')
+	</select>
+	
+	<update id="updateUserRef" parameterType="com.rionsoft.rcms.entry.task.TaskUserRefEntry">
+		update TASK_USER_REF set PERCENTAGE = #{percentage},REL_END_DATE = #{relEndDate}
+		where PK_TASK = #{pkTask} and USER_ID = #{userId}
+	</update>
+	
+	<select id="queryByPkTask" resultMap="userRefEntry">
+		select distinct a.PK_TASK,a.USER_ID,a.REQUIRE_WORKLOAD,a.PERCENTAGE,a.REL_END_DATE from TASK_USER_REF a
+		left join TASK b on a.PK_TASK = b.PK_TASK
+		where b.STATUS != '2' and b.STATUS != '5' and a.PK_TASK in 
+		<foreach collection="entryList" item="entry" open="(" close=")" separator=",">
+			'${entry.pkTask}'
+		</foreach>
+	</select>
+	<select id="queryTaskByUserName" resultType="java.lang.Long">
+		select a.PK_TASK from TASK_USER_REF a
+		left join USER_INFO b on a.USER_ID = b.USER_ID
+		<where>
+			<if test="userName !=null and userName !=''">
+				AND b.USER_NAME like '%'+#{userName}+'%'
+			</if>
+     	</where>
+	</select>
+	<select id="queryTaskByPkProj" resultMap="entryTask">
+		select PK_TASK,
+			   PK_PROJ,
+			   TASK_NAME
+		  from TASK
+		  where STATUS in ('0','1','3','4')
+		  and PK_PROJ = #{pkProj}
+	</select>
+</mapper>
+

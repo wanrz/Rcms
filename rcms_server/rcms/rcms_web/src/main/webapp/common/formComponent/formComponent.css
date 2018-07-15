@@ -1,0 +1,189 @@
+@CHARSET "UTF-8";
+/*--下拉框样式开始--*/
+.selectBox{
+	width:193px;
+	height:33px;
+	float: left;
+}
+
+.selectBox .select{
+	width:193px;
+	height:33px;
+	position:relative;
+}
+
+.selectBox .select input[type="text"]{
+	border: none;
+	outline: none;
+	width:150px;
+	height:30px;
+	line-height:30px;
+	*height:28px;/*IE6、7*/
+	*line-height:28px;/*IE6、7*/
+	margin:1px;
+	background-color: #fff;
+	padding-left:10px;
+	/*解决浏览器兼容问题*/
+	display:inline;
+	overflow: hidden;
+	cursor: default;
+	font-size:13px;
+}
+
+.selectBox .select img{
+	outline: none;
+	border: none;
+	position: absolute;
+	top:3px;
+	right:1px; 
+}
+
+.selectBox .select img:HOVER {
+	cursor: pointer;
+}
+
+.selectBox .options {
+	display: none;
+	position: absolute;
+	height: auto;
+	max-height:400px;
+	width: 193px;
+	background: #fff;
+	border: solid 1px #d9d9d9;
+	border-top: none;
+	z-index: 2;
+	overflow-x: hidden;
+	overflow-y: auto;
+	margin-left:0px;
+}
+
+.selectBox .options ul{
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.selectBox .options ul li {
+	display: block;
+	width: 100%;
+	line-height: 29px;
+	text-indent: 10px;
+	cursor: default;
+}
+
+.selectBox .options ul li:hover {
+	background: #F1F1F1;
+	text-decoration: none;
+}
+/*下拉框样式结束*/
+
+/*文本框样式开始*/
+.inputBox{
+	width:193px;
+	height:33px;
+	position:relative;
+	float: left;
+	cursor: text;
+}
+.inputBox input[type="text"]{
+	border: none;
+	outline: none;
+	width:178px;
+	height:30px;
+	line-height:30px;
+	margin:1px;
+	*height:28px;/*IE6、7*/
+	*line-height:28px;/*IE6、7*/
+	background-color: #fff;
+	padding-left:10px;
+	/*解决浏览器兼容问题*/
+	display:inline;
+	overflow: hidden;
+	cursor: text;
+	font-size:13px;
+}
+.inputBoxLong input[type="text"]{
+    border:1px solid #C2C4C3;
+    border-radius:4px;
+	outline: none;
+	width:290px;
+	height:33px;
+	line-height:33px;
+	margin:1px;
+	*height:28px;/*IE6、7*/
+	*line-height:28px;/*IE6、7*/
+	padding-left:10px;
+	background-color:#fff;
+	/*解决浏览器兼容问题*/
+	display:inline;
+	overflow: hidden;
+	cursor: text;
+	font-size:13px;
+}
+
+.inputBox .Mdate{
+	background:url("../My97DatePicker/skin/datePicker.gif") no-repeat scroll right; 
+}
+
+/*textarea样式开始*/
+.textareaBox{
+	width: 646px;
+	height: 70px;
+}
+
+.textareaBox textarea{
+	width: 632px;
+	height:62px;
+	resize:none;
+	overflow: hidden;
+	background-color: #fff;
+	border: none;
+	outline: none;
+	margin: 1px;
+	margin-top:none;
+	padding:2px 5px; 
+	word-wrap:break-word;/*自动换行*/
+	font-size:13px;
+}
+/*textarea样式结束*/
+
+/*文本框1及下拉框1正确*/
+.trueInput{
+	border:1px solid #CDCFCE;
+	border-radius:4px;
+	resize:none;
+}
+/*文本框1及下拉框1错误*/
+.errorInput{
+	background: url("5.jpg") no-repeat center;	
+}
+
+
+/*文本框2及下拉框2正确*/
+.trueInput2{
+	background: url("21.jpg") no-repeat center;
+}
+/*文本框2及下拉框2错误*/
+.errorInput2{
+	background: url("1.jpg") no-repeat center;	
+}
+
+/*文本域正确*/
+.trueTextArea{
+	border:1px solid #CDCFCE;
+	border-radius:6px;
+	resize:none;
+	/* background: url("3.jpg") no-repeat center; */
+}
+/*文本域错误*/
+.errorTextArea{
+	background: url("2.jpg") no-repeat center;	
+}
+.smallInputBox{
+	width:80px;
+	height:33px;
+	position:relative;
+	cursor: text;
+	border:1px solid #E3E3E3;
+	border-radius:5px;
+}
